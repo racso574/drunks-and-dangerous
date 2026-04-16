@@ -525,7 +525,7 @@
     .fab-menu-preview {
       position: fixed;
       right: 16px;
-      bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+      bottom: calc(56px + env(safe-area-inset-bottom, 0px));
       width: 58px;
       height: 58px;
       border-radius: 999px;
@@ -837,7 +837,7 @@
 
   
 
-  <button class="fab-menu-preview" id="floatingMenuPreviewBtn" type="button" aria-label="Menu rapido" title="Menu rapido">
+  <button class="fab-menu-preview hidden" id="floatingMenuPreviewBtn" type="button" aria-label="Menu rapido" title="Menu rapido">
     <span aria-hidden="true">⋯</span>
     <span class="fab-menu-preview-label">Menu rapido</span>
   </button>
@@ -1084,10 +1084,18 @@
       document.getElementById('gameStatus').textContent = message;
     }
 
+    function updateFloatingMenuPreview(screenId) {
+      const fab = document.getElementById('floatingMenuPreviewBtn');
+      if (!fab) return;
+      const shouldShow = screenId === 'gameScreen' && !!currentParty && !!currentPlayer && currentPlayer.night_finished !== true;
+      fab.classList.toggle('hidden', !shouldShow);
+    }
+
     function showOnly(screenId) {
       ['homeScreen', 'setupScreen', 'gameScreen', 'playerDetailScreen', 'finalScreen'].forEach(id => {
         document.getElementById(id).classList.toggle('hidden', id !== screenId);
       });
+      updateFloatingMenuPreview(screenId);
     }
 
     function currentCounters() {
