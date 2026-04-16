@@ -486,6 +486,37 @@
         align-items: flex-start;
       }
     }
+  
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.66);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 1000;
+    }
+
+    .modal-card {
+      width: min(100%, 420px);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(32,25,18,.98), rgba(20,16,12,.98));
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .modal-card h3 {
+      margin: 0 0 8px;
+      color: var(--gold-2);
+      font-size: 1.05rem;
+    }
+
+    .modal-card p {
+      margin: 0 0 12px;
+    }
+
   </style>
 </head>
 <body>
@@ -652,7 +683,24 @@
     </section>
   </div>
 
+  
+  <div class="modal-backdrop hidden" id="adminDeleteModal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="adminDeleteTitle">
+      <h3 id="adminDeleteTitle">Modo admin</h3>
+      <p class="footnote" id="adminDeleteText">Escribe la contraseña para borrar la partida.</p>
+      <div class="field">
+        <label for="adminDeletePasswordInput">Contraseña</label>
+        <input id="adminDeletePasswordInput" type="text" placeholder="borrar" autocomplete="off" autocapitalize="none" spellcheck="false" />
+      </div>
+      <div class="screen-actions">
+        <button id="adminDeleteCancelBtn" type="button">Cancelar</button>
+        <button id="adminDeleteConfirmBtn" class="warn" type="button">Borrar ahora</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
     const SUPABASE_URL = 'https://wjevakstgxgafvziggns.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_HT1PtUDwuFS8L25191x9ww_Sl2txYW1';
@@ -717,6 +765,12 @@
     let selectedPlayerId = null;
     let realtimeChannels = [];
     let cleanupInFlight = false;
+    let secretPartyTapState = { partyId: null, count: 0, lastTapAt: 0 };
+    let secretPartyTapTimer = null;
+    let pendingSecretDeleteParty = null;
+    const SECRET_PARTY_TAP_TARGET = 5;
+    const SECRET_PARTY_TAP_RESET_MS = 1200;
+    const SECRET_PARTY_OPEN_DELAY_MS = 650;
     function normalizeName(value) {
       return String(value || '').trim().toLowerCase();
     }
@@ -961,6 +1015,83 @@
       renderPartyList();
     }
 
+    function resetSecretPartyTapState() {
+      if (secretPartyTapTimer) {
+        clearTimeout(secretPartyTapTimer);
+        secretPartyTapTimer = null;
+      }
+      secretPartyTapState = { partyId: null, count: 0, lastTapAt: 0 };
+    }
+
+    function scheduleStandardPartyOpen(party) {
+      if (secretPartyTapTimer) clearTimeout(secretPartyTapTimer);
+      secretPartyTapTimer = setTimeout(async () => {
+        const shouldOpen = secretPartyTapState.partyId === party.id && secretPartyTapState.count < SECRET_PARTY_TAP_TARGET;
+        resetSecretPartyTapState();
+        if (shouldOpen) await connectToParty(party);
+      }, SECRET_PARTY_OPEN_DELAY_MS);
+    }
+
+    function openAdminDeleteModal(party) {
+      pendingSecretDeleteParty = party;
+      document.getElementById('adminDeleteText').textContent = `Escribe la contraseña para borrar ${party.name} ahora mismo.`;
+      const modal = document.getElementById('adminDeleteModal');
+      const input = document.getElementById('adminDeletePasswordInput');
+      input.value = '';
+      modal.classList.remove('hidden');
+      modal.setAttribute('aria-hidden', 'false');
+      window.setTimeout(() => input.focus(), 20);
+    }
+
+    function closeAdminDeleteModal(cancelled = false) {
+      const modal = document.getElementById('adminDeleteModal');
+      modal.classList.add('hidden');
+      modal.setAttribute('aria-hidden', 'true');
+      document.getElementById('adminDeletePasswordInput').value = '';
+      pendingSecretDeleteParty = null;
+      if (cancelled) setHomeStatus('Borrado cancelado.');
+    }
+
+    async function submitAdminDeleteModal() {
+      const party = pendingSecretDeleteParty;
+      if (!party) return;
+      const password = String(document.getElementById('adminDeletePasswordInput').value || '').trim();
+      if (password.toLowerCase() !== 'borrar') {
+        setHomeStatus('Contraseña incorrecta.');
+        return;
+      }
+      closeAdminDeleteModal(false);
+      setHomeStatus(`Borrando ${party.name}...`);
+      const ok = await deletePartyDataById(party.id, { partyName: party.name, forceEventsDelete: true });
+      if (!ok) {
+        setHomeStatus(`No se pudo borrar ${party.name}.`);
+        return;
+      }
+      await loadPartiesList();
+      setHomeStatus(`Partida ${party.name} borrada al instante.`);
+    }
+
+    async function promptAndForceDeleteParty(party) {
+      openAdminDeleteModal(party);
+    }
+
+    async function handlePartyRowTap(party) {
+      const now = Date.now();
+      if (secretPartyTapState.partyId !== party.id || now - secretPartyTapState.lastTapAt > SECRET_PARTY_TAP_RESET_MS) {
+        secretPartyTapState = { partyId: party.id, count: 0, lastTapAt: now };
+      }
+      secretPartyTapState.count += 1;
+      secretPartyTapState.lastTapAt = now;
+
+      if (secretPartyTapState.count >= SECRET_PARTY_TAP_TARGET) {
+        resetSecretPartyTapState();
+        await promptAndForceDeleteParty(party);
+        return;
+      }
+
+      scheduleStandardPartyOpen(party);
+    }
+
     function renderPartyList() {
       const wrap = document.getElementById('partyList');
       wrap.innerHTML = '';
@@ -978,7 +1109,7 @@
           </div>
           <div class="tag">Abrir</div>
         `;
-        row.onclick = () => connectToParty(party);
+        row.onclick = () => handlePartyRowTap(party);
         wrap.appendChild(row);
       });
     }
@@ -1496,17 +1627,56 @@
       document.getElementById('backToNightBtn').disabled = locked;
     }
 
-    async function cleanupPartyIfLocked() {
-      if (!currentParty || !allPlayersFinished() || cleanupInFlight) return;
+    async function deleteOptionalEventsForParty(partyId) {
+      const { error } = await supabaseClient.from('events').delete().eq('party_id', partyId);
+      if (!error) return;
+      const errorText = `${error.message || ''} ${error.details || ''} ${error.hint || ''}`;
+      const missingTable = /does not exist|Could not find the table|schema cache/i.test(errorText);
+      if (missingTable) return;
+      throw error;
+    }
+
+    async function deletePartyDataById(partyId, options = {}) {
+      const { partyName = 'la partida', forceEventsDelete = false } = options;
+      if (!partyId || cleanupInFlight) return false;
       cleanupInFlight = true;
       try {
-        const { error } = await supabaseClient.from('parties').delete().eq('id', currentParty.id);
-        if (error) {
-          console.error(error);
+        if (forceEventsDelete) await deleteOptionalEventsForParty(partyId);
+
+        const { error: missionsError } = await supabaseClient.from('missions').delete().eq('party_id', partyId);
+        if (missionsError) throw missionsError;
+
+        const { error: playersError } = await supabaseClient.from('players').delete().eq('party_id', partyId);
+        if (playersError) throw playersError;
+
+        const { error: partyError } = await supabaseClient.from('parties').delete().eq('id', partyId);
+        if (partyError) throw partyError;
+
+        clearLocalProfile(partyId);
+
+        if (currentParty?.id === partyId) {
+          closeRealtime();
+          currentParty = null;
+          currentPlayer = null;
+          localProfile = null;
+          players = [];
+          missions = [];
+          selectedPlayerId = null;
+          renderHome();
+          setHomeStatus(`${partyName} se ha borrado.`);
         }
+        return true;
+      } catch (error) {
+        console.error(error);
+        return false;
       } finally {
         cleanupInFlight = false;
       }
+    }
+
+    async function cleanupPartyIfLocked() {
+      if (!currentParty || !allPlayersFinished()) return false;
+      return deletePartyDataById(currentParty.id, { partyName: currentParty.name, forceEventsDelete: true });
     }
 
     async function exportAndExit() {
@@ -1566,6 +1736,15 @@
       document.getElementById('finishNightBtn').onclick = finishNight;
       document.getElementById('backToNightBtn').onclick = backToNight;
       document.getElementById('exportAndExitBtn').onclick = exportAndExit;
+      document.getElementById('adminDeleteCancelBtn').onclick = () => closeAdminDeleteModal(true);
+      document.getElementById('adminDeleteConfirmBtn').onclick = submitAdminDeleteModal;
+      document.getElementById('adminDeletePasswordInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') submitAdminDeleteModal();
+        if (e.key === 'Escape') closeAdminDeleteModal(true);
+      });
+      document.getElementById('adminDeleteModal').addEventListener('click', e => {
+        if (e.target.id === 'adminDeleteModal') closeAdminDeleteModal(true);
+      });
     }
 
     wireUI();
