@@ -939,13 +939,13 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const CLASS_PRESETS = {
-      Bardo: { alcohol: 1, charisma: 3, physical: 1, intelligence: 2, chaos: 2 },
-      Picaro: { alcohol: 1, charisma: 2, physical: 2, intelligence: 2, chaos: 2 },
-      Monje: { alcohol: 0.5, charisma: 1, physical: 2, intelligence: 3, chaos: 0.5 },
-      Mago: { alcohol: 1, charisma: 1, physical: 0.5, intelligence: 3, chaos: 2 },
-      Druida: { alcohol: 1, charisma: 1, physical: 2, intelligence: 2, chaos: 1 },
-      Paladin: { alcohol: 1, charisma: 2, physical: 2, intelligence: 1, chaos: 0.5 },
-      Barbaro: { alcohol: 2, charisma: 0.5, physical: 3, intelligence: 0.5, chaos: 1 }
+      Bardo: { alcohol: 2, charisma: 2.5, physical: 1, intelligence: 1, chaos: 1 },
+      Picaro: { alcohol: 2, charisma: 2, physical: 1, intelligence: 1, chaos: 2 },
+      Monje: { alcohol: 0, charisma: 3, physical: 0, intelligence: 0, chaos: 0 },
+      Mago: { alcohol: 2, charisma: 1, physical: 2, intelligence: 1, chaos: 2 },
+      Druida: { alcohol: 2, charisma: 2, physical: 1, intelligence: 1, chaos: 2 },
+      Paladin: { alcohol: 1, charisma: 1, physical: 1, intelligence: 1, chaos: 1 },
+      Barbaro: { alcohol: 3, charisma: 1, physical: 1, intelligence: 1, chaos: 1 }
     };
 
     const STATS = [
@@ -1187,7 +1187,9 @@
 
     function visibleOptionsForGroup(player, group) {
       if (!isMonk(player)) return group.options;
-      return group.options.filter(option => option.monkAllowed === true);
+      if (group.key === 'drinks' || group.key === 'extras') return [];
+      if (group.key === 'smoke') return group.options.filter(option => option.key === 'cig');
+      return group.options;
     }
 
     function groupBasePointsForPlayer(player, group) {
@@ -1203,7 +1205,11 @@
 
     function missionScoreForPlayer(player) {
       if (!player) return 0;
-      return missions.reduce((sum, mission) => missionCompletedByPlayer(mission, player.id) ? sum + Number(mission.points || 0) : sum, 0);
+      const charismaMultiplier = statMultiplierForPlayer(player, 'charisma');
+      return missions.reduce((sum, mission) => {
+        if (!missionCompletedByPlayer(mission, player.id)) return sum;
+        return sum + Number(mission.points || 0) * charismaMultiplier;
+      }, 0);
     }
 
     function totalDrinksForPlayer(player) {
@@ -1655,7 +1661,7 @@
       STATS.forEach(stat => {
         const row = document.createElement('div');
         row.className = 'stat-row';
-        row.innerHTML = `<div>${stat.label}</div><div class="tag mono">x${preset[stat.key]}</div>`;
+        row.innerHTML = `<div>${stat.label}${stat.key === 'intelligence' ? ' <span class="footnote">(visible, no puntua)</span>' : ''}</div><div class="tag mono">x${preset[stat.key]}</div>`;
         wrap.appendChild(row);
       });
       updateStatsVisibility();
