@@ -637,7 +637,7 @@
           <button id="importLocalBtn" type="button">Importar local</button>
         </div>
         <button id="wipeLocalBtn" class="warn full-width" type="button" style="margin-top:10px">Borrar solo datos locales</button>
-        <p class="footnote" id="statusText" style="margin-top:10px">Preparando guardado…</p>
+        <p class="footnote" id="statusText" style="margin-top:10px">Preparando guardadoÂ…</p>
       </section>
     </div>
   </div>
@@ -979,7 +979,7 @@
         row.className = 'checkbox-row';
         row.innerHTML = `
           <input type="checkbox" value="${player.id}" />
-          <span>${player.name} · ${player.class_id}</span>
+          <span>${player.name} Â· ${player.class_id}</span>
         `;
         row.querySelector('input').onchange = () => {
           const checked = [...wrap.querySelectorAll('input:checked')];
@@ -1091,7 +1091,7 @@
 
     function rerender() {
       document.getElementById('titleMeta').textContent = currentParty && currentPlayer
-        ? `${currentParty.name} · ${currentPlayer.name}`
+        ? `${currentParty.name} Â· ${currentPlayer.name}`
         : currentParty
           ? currentParty.name
           : 'Sin conectar';
@@ -1183,7 +1183,7 @@
     async function handleSetupPhotoChange(file) {
       if (!file) return;
       try {
-        document.getElementById('setupStatus').textContent = 'Procesando foto…';
+        document.getElementById('setupStatus').textContent = 'Procesando fotoÂ…';
         const rawDataUrl = await fileToDataUrl(file);
         setupPhoto = await resizeImageDataUrl(rawDataUrl, 320, 0.82);
         updateSetupPhotoUI();
@@ -1201,7 +1201,7 @@
         return;
       }
 
-      document.getElementById('connectStatus').textContent = 'Buscando partida…';
+      document.getElementById('connectStatus').textContent = 'Buscando partidaÂ…';
       const { data, error } = await supabaseClient.from('parties').select('*').order('created_at', { ascending: true });
       if (error) {
         console.error(error);
@@ -1211,7 +1211,7 @@
 
       let party = (data || []).find(item => normalizeName(item.name) === normalizeName(partyName));
       if (!party) {
-        const shouldCreate = confirm(`La partida "${partyName}" no existe. ¿Quieres crearla?`);
+        const shouldCreate = confirm(`La partida "${partyName}" no existe. Â¿Quieres crearla?`);
         if (!shouldCreate) {
           document.getElementById('connectStatus').textContent = 'Partida no creada.';
           return;
@@ -1265,7 +1265,7 @@
         return;
       }
 
-      document.getElementById('setupStatus').textContent = 'Creando personaje…';
+      document.getElementById('setupStatus').textContent = 'Creando personajeÂ…';
       const { data, error } = await supabaseClient
         .from('players')
         .insert({
@@ -1316,7 +1316,7 @@
         return;
       }
 
-      document.getElementById('missionCreateStatus').textContent = 'Enviando mision…';
+      document.getElementById('missionCreateStatus').textContent = 'Enviando misionÂ…';
       const payload = {
         party_id: currentParty.id,
         title,
@@ -1443,7 +1443,7 @@
 
     function wipeLocalData() {
       if (!currentParty || !currentPlayer) return;
-      if (!confirm('¿Borrar solo los datos locales de este movil?')) return;
+      if (!confirm('Â¿Borrar solo los datos locales de este movil?')) return;
       localCounters = defaultCounters();
       saveLocalCounters();
       if (localProfile) {
