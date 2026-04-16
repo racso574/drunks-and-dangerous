@@ -517,6 +517,12 @@
       margin: 0 0 12px;
     }
 
+    .stack-actions {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
   </style>
 </head>
 <body>
@@ -628,15 +634,8 @@
       </section>
 
       <section class="card">
-        <div class="section-title"><h2>Resumen</h2></div>
-        <div class="summary">
-          <div class="score-box"><h3>Puntuacion total</h3><div class="big mono" id="totalScore">0</div></div>
-          <div class="score-box"><h3>Bebidas totales</h3><div class="big mono" id="totalDrinks">0</div></div>
-          <div class="score-box"><h3>Fumadas totales</h3><div class="big mono" id="totalSmoked">0</div></div>
-          <div class="score-box"><h3>Drogas totales</h3><div class="big mono" id="totalDrugs">0</div></div>
-          <div class="score-box"><h3>Misiones completadas</h3><div class="big mono" id="completedMissions">0</div></div>
-          <div class="score-box"><h3>Logros obtenidos</h3><div class="big mono" id="earnedAchievements">0</div></div>
-        </div>
+        <div class="section-title"><h2>Finalizar</h2></div>
+        <p class="footnote">Los resultados completos solo se mostraran al finalizar tu noche.</p>
         <button id="finishNightBtn" class="primary full-width" type="button" style="margin-top:12px">Finalizar noche</button>
         <p class="footnote" id="gameStatus" style="margin-top:10px">Listo para jugar.</p>
       </section>
@@ -676,9 +675,10 @@
         <div class="score-box"><h3>Logros obtenidos</h3><div class="big mono" id="finalAchievements">0</div></div>
       </div>
       <p class="footnote" id="finalStatus" style="margin-top:10px">Cuando todo el mundo finalice la noche, ya no se podra volver atras.</p>
-      <div class="screen-actions">
-        <button id="backToNightBtn" type="button">Volver a la noche</button>
-        <button id="exportAndExitBtn" class="primary" type="button">Exportar local y salir</button>
+      <div class="stack-actions">
+        <button id="backToNightBtn" type="button" class="full-width">Volver a la noche</button>
+        <button id="exportPdfBtn" class="primary full-width" type="button">Exportar PDF</button>
+        <button id="exitPartyBtn" type="button" class="full-width">Salir</button>
       </div>
     </section>
   </div>
@@ -768,6 +768,9 @@
     let secretPartyTapState = { partyId: null, count: 0, lastTapAt: 0 };
     let secretPartyTapTimer = null;
     let pendingSecretDeleteParty = null;
+    let playerActionLog = [];
+    let exportInFlight = false;
+    let pdfLibsPromise = null;
     const SECRET_PARTY_TAP_TARGET = 5;
     const SECRET_PARTY_TAP_RESET_MS = 1200;
     const SECRET_PARTY_OPEN_DELAY_MS = 650;
@@ -816,6 +819,96 @@
 
     function clearLocalProfile(partyId) {
       localStorage.removeItem(playerStorageKey(partyId));
+    }
+
+    function playerActionLogStorageKey(partyId, playerId) {
+      return `dd-log:${partyId}:${playerId}`;
+    }
+
+    function loadPlayerActionLog(partyId, playerId) {
+      const raw = localStorage.getItem(playerActionLogStorageKey(partyId, playerId));
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function savePlayerActionLog() {
+      if (!localProfile?.partyId || !localProfile?.playerId) return;
+      localStorage.setItem(playerActionLogStorageKey(localProfile.partyId, localProfile.playerId), JSON.stringify(playerActionLog));
+    }
+
+    function clearPlayerActionLog(partyId, playerId) {
+      if (!partyId || !playerId) return;
+      localStorage.removeItem(playerActionLogStorageKey(partyId, playerId));
+    }
+
+    function appendPlayerActionLog(entry) {
+      if (!localProfile?.partyId || !localProfile?.playerId) return;
+      playerActionLog.unshift({ at: new Date().toISOString(), ...entry });
+      if (playerActionLog.length > 800) playerActionLog = playerActionLog.slice(0, 800);
+      savePlayerActionLog();
+    }
+
+    function formatDateTime(value) {
+      if (!value) return '-';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return String(value);
+      return date.toLocaleString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function pdfText(value) {
+      return String(value || '')
+        .replace(/[\u{1F300}-\u{1FAFF}]/gu, '')
+        .replace(/[\u200B-\u200D\uFE0F]/g, '')
+        .trim();
+    }
+
+    function counterOptionByKey(key) {
+      for (const group of COUNTER_GROUPS) {
+        const option = group.options.find(item => item.key === key);
+        if (option) return { ...option, groupKey: group.key, groupLabel: group.label };
+      }
+      return null;
+    }
+
+    function missionCompletionText(mission) {
+      if (mission.completion_mode === 'first') {
+        return mission.first_completed_by_name ? `Primero: ${mission.first_completed_by_name}` : 'Pendiente';
+      }
+      const names = (mission.completed_by_player_ids || []).map(playerNameById).filter(Boolean);
+      return names.length ? names.join(', ') : 'Pendiente';
+    }
+
+    function describePlayerLogEntry(entry) {
+      switch (entry?.type) {
+        case 'player_created':
+          return { event: 'Personaje creado', detail: `${entry.name || ''} · ${entry.classId || ''}` };
+        case 'counter': {
+          const sign = entry.delta > 0 ? '+' : '-';
+          return {
+            event: `${sign}${Math.abs(entry.delta || 0)} ${entry.label || entry.key || 'contador'}`,
+            detail: `${entry.before ?? 0} -> ${entry.after ?? 0}`
+          };
+        }
+        case 'mission_created':
+          return { event: `Mision creada: ${entry.title || ''}`, detail: `${entry.points || 0} pts · ${entry.targets || 'Toda la partida'}` };
+        case 'mission_toggle':
+          return { event: entry.completed ? `Mision completada: ${entry.title || ''}` : `Mision desmarcada: ${entry.title || ''}`, detail: entry.mode || '' };
+        case 'night_finish':
+          return { event: entry.finished ? 'Noche finalizada' : 'Vuelta a la noche', detail: entry.partyName || '' };
+        default:
+          return { event: entry?.event || 'Evento', detail: entry?.detail || '' };
+      }
     }
 
     function setHomeStatus(message) {
@@ -1148,6 +1241,7 @@
         if (matchingPlayer) {
           currentPlayer = matchingPlayer;
           localProfile = savedProfile;
+          playerActionLog = loadPlayerActionLog(savedProfile.partyId, savedProfile.playerId);
           if (currentPlayer.night_finished) {
             renderFinalScreen();
             showOnly('finalScreen');
@@ -1160,6 +1254,7 @@
           return;
         }
       }
+      playerActionLog = [];
       showOnly('setupScreen');
       setSetupStatus(`Partida ${party.name} lista. Crea ahora tu personaje.`);
     }
@@ -1168,6 +1263,7 @@
       currentParty = null;
       currentPlayer = null;
       localProfile = null;
+      playerActionLog = [];
       players = [];
       missions = [];
       selectedPlayerId = null;
@@ -1217,6 +1313,8 @@
         profilePhoto: setupPhoto || null
       };
       saveLocalProfile(localProfile);
+      playerActionLog = loadPlayerActionLog(localProfile.partyId, localProfile.playerId);
+      appendPlayerActionLog({ type: 'player_created', name: data.name, classId: data.class_id });
       await loadPartyData();
       renderGame();
       showOnly('gameScreen');
@@ -1335,8 +1433,22 @@
     }
     async function updateOwnCounters(nextCounters) {
       if (!currentPlayer) return;
+      const previous = currentCounters();
       const sanitized = sanitizeCounters(nextCounters);
       currentPlayer = { ...currentPlayer, counters: sanitized };
+      Object.keys(sanitized).forEach(key => {
+        const delta = sanitized[key] - previous[key];
+        if (!delta) return;
+        const option = counterOptionByKey(key);
+        appendPlayerActionLog({
+          type: 'counter',
+          key,
+          label: option?.label || key,
+          delta,
+          before: previous[key],
+          after: sanitized[key]
+        });
+      });
       renderCounters();
       renderSummary();
       const { error } = await supabaseClient.from('players').update({ counters: sanitized }).eq('id', currentPlayer.id);
@@ -1450,6 +1562,13 @@
       document.getElementById('missionCompletionMode').value = 'first';
       document.getElementById('missionAssignedMode').value = 'all';
       renderMissionTargets();
+      appendPlayerActionLog({
+        type: 'mission_created',
+        title,
+        points,
+        targets: assignedMode === 'all' ? 'Toda la partida' : targetIds.map(playerNameById).join(', '),
+        mode: completionMode
+      });
       document.getElementById('missionCreateStatus').textContent = 'Mision enviada.';
       await loadPartyData();
     }
@@ -1505,6 +1624,12 @@
           return;
         }
       }
+      appendPlayerActionLog({
+        type: 'mission_toggle',
+        title: mission.title,
+        completed: !missionCompletedByPlayer(mission, currentPlayer.id),
+        mode: mission.completion_mode === 'first' ? '1 ganador' : 'Multiples ganadores'
+      });
       await loadPartyData();
     }
 
@@ -1545,13 +1670,6 @@
       });
     }
     function renderSummary() {
-      const summary = ownFinalSummary();
-      document.getElementById('totalScore').textContent = String(summary.score);
-      document.getElementById('totalDrinks').textContent = String(summary.drinks);
-      document.getElementById('totalSmoked').textContent = String(summary.smoked);
-      document.getElementById('totalDrugs').textContent = String(summary.drugs);
-      document.getElementById('completedMissions').textContent = String(summary.missions);
-      document.getElementById('earnedAchievements').textContent = String(summary.achievements);
       const finished = players.filter(player => player.night_finished).length;
       setGameStatus(`Han finalizado ${finished} de ${players.length} jugadores.`);
     }
@@ -1597,6 +1715,7 @@
     async function finishNight() {
       const ok = await setNightFinished(true);
       if (!ok) return;
+      appendPlayerActionLog({ type: 'night_finish', finished: true, partyName: currentParty?.name || '' });
       await loadPartyData();
       renderFinalScreen();
       showOnly('finalScreen');
@@ -1606,6 +1725,7 @@
       if (allPlayersFinished()) return;
       const ok = await setNightFinished(false);
       if (!ok) return;
+      appendPlayerActionLog({ type: 'night_finish', finished: false, partyName: currentParty?.name || '' });
       await loadPartyData();
       renderGame();
       showOnly('gameScreen');
@@ -1652,7 +1772,9 @@
         const { error: partyError } = await supabaseClient.from('parties').delete().eq('id', partyId);
         if (partyError) throw partyError;
 
+        const savedProfile = currentParty?.id === partyId ? localProfile : loadLocalProfile(partyId);
         clearLocalProfile(partyId);
+        clearPlayerActionLog(partyId, savedProfile?.playerId);
 
         if (currentParty?.id === partyId) {
           closeRealtime();
@@ -1679,29 +1801,260 @@
       return deletePartyDataById(currentParty.id, { partyName: currentParty.name, forceEventsDelete: true });
     }
 
-    async function exportAndExit() {
-      if (!currentParty || !currentPlayer) return;
-      const partyId = currentParty.id;
-      const payload = {
-        party: currentParty.name,
-        player: currentPlayer.name,
-        classId: currentPlayer.class_id,
-        counters: countersForPlayer(currentPlayer),
-        summary: ownFinalSummary(),
-        completedMissions: missions.filter(mission => missionCompletedByPlayer(mission, currentPlayer.id)).map(mission => ({ title: mission.title, points: mission.points })),
-        photo: localProfile?.profilePhoto || null
-      };
-      const data = JSON.stringify(payload, null, 2);
-      let copied = false;
-      try {
-        await navigator.clipboard.writeText(data);
-        copied = true;
-      } catch {
-        alert(data);
+    function loadScriptOnce(src) {
+      return new Promise((resolve, reject) => {
+        const existing = [...document.querySelectorAll('script')].find(script => script.src === src);
+        if (existing && existing.dataset.loaded === 'true') {
+          resolve();
+          return;
+        }
+        if (existing) {
+          existing.addEventListener('load', () => resolve(), { once: true });
+          existing.addEventListener('error', () => reject(new Error(`No se pudo cargar ${src}`)), { once: true });
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        script.onload = () => {
+          script.dataset.loaded = 'true';
+          resolve();
+        };
+        script.onerror = () => reject(new Error(`No se pudo cargar ${src}`));
+        document.head.appendChild(script);
+      });
+    }
+
+    async function ensurePdfLibs() {
+      if (window.jspdf?.jsPDF?.API?.autoTable) return;
+      if (!pdfLibsPromise) {
+        pdfLibsPromise = (async () => {
+          if (!window.jspdf?.jsPDF) {
+            await loadScriptOnce('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js');
+          }
+          if (!window.jspdf?.jsPDF) {
+            throw new Error('No se ha podido cargar jsPDF.');
+          }
+          if (!window.jspdf.jsPDF.API.autoTable) {
+            await loadScriptOnce('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js');
+          }
+          if (!window.jspdf.jsPDF.API.autoTable) {
+            throw new Error('No se ha podido cargar AutoTable.');
+          }
+        })().finally(() => {
+          pdfLibsPromise = null;
+        });
       }
+      await pdfLibsPromise;
+    }
+
+    function buildPlayerRankingRows() {
+      return [...players]
+        .sort((a, b) => totalScoreForPlayer(b) - totalScoreForPlayer(a))
+        .map(player => [
+          pdfText(player.name),
+          pdfText(player.class_id),
+          String(totalScoreForPlayer(player)),
+          String(totalDrinksForPlayer(player)),
+          String(totalSmokedForPlayer(player)),
+          String(totalDrugsForPlayer(player)),
+          String(completedMissionsForPlayer(player)),
+          player.night_finished ? 'Finalizada' : 'En juego'
+        ]);
+    }
+
+    function buildMissionRows() {
+      return missions.map(mission => [
+        formatDateTime(mission.created_at),
+        pdfText(mission.title),
+        String(mission.points || 0),
+        pdfText(playerNameById(mission.created_by_player_id)),
+        pdfText(missionTargetsText(mission)),
+        pdfText(missionCompletionText(mission))
+      ]);
+    }
+
+    function buildOwnActionRows() {
+      return [...playerActionLog]
+        .sort((a, b) => new Date(a.at) - new Date(b.at))
+        .map(entry => {
+          const description = describePlayerLogEntry(entry);
+          return [formatDateTime(entry.at), pdfText(description.event), pdfText(description.detail)];
+        });
+    }
+
+    async function exportPdfReport() {
+      if (!currentParty || !currentPlayer || exportInFlight) return;
+      exportInFlight = true;
+      try {
+        document.getElementById('finalStatus').textContent = 'Preparando PDF...';
+        await ensurePdfLibs();
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 40;
+        const summary = ownFinalSummary();
+        const counters = countersForPlayer(currentPlayer);
+        const nowLabel = formatDateTime(new Date().toISOString());
+
+        doc.setFillColor(32, 25, 18);
+        doc.roundedRect(margin, margin, pageWidth - margin * 2, 96, 16, 16, 'F');
+        doc.setTextColor(242, 221, 170);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(22);
+        doc.text(pdfText(`Informe final · ${currentParty.name}`), margin + 18, margin + 28);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.text(pdfText(`Jugador: ${currentPlayer.name} · ${currentPlayer.class_id}`), margin + 18, margin + 52);
+        doc.text(pdfText(`Exportado: ${nowLabel}`), margin + 18, margin + 70);
+        doc.text(pdfText('Incluye todo lo guardado por la app y el historial local de este movil.'), margin + 18, margin + 88);
+
+        if (localProfile?.profilePhoto) {
+          try {
+            doc.addImage(localProfile.profilePhoto, 'JPEG', pageWidth - margin - 78, margin + 14, 60, 60);
+          } catch (error) {
+            console.warn('No se pudo insertar la foto en el PDF.', error);
+          }
+        }
+
+        doc.autoTable({
+          startY: margin + 116,
+          theme: 'grid',
+          head: [['Resumen', 'Valor']],
+          body: [
+            ['Puntuacion total', String(summary.score)],
+            ['Bebidas totales', String(summary.drinks)],
+            ['Fumadas totales', String(summary.smoked)],
+            ['Drogas totales', String(summary.drugs)],
+            ['Misiones completadas', String(summary.missions)],
+            ['Logros', String(summary.achievements)]
+          ],
+          headStyles: { fillColor: [84, 63, 37] },
+          styles: { font: 'helvetica', fontSize: 10, cellPadding: 6, valign: 'middle' },
+          columnStyles: { 1: { halign: 'right', cellWidth: 100 } },
+          margin: { left: margin, right: margin }
+        });
+
+        doc.autoTable({
+          startY: doc.lastAutoTable.finalY + 16,
+          theme: 'grid',
+          head: [['Contador', 'Cantidad']],
+          body: [
+            [pdfText(counterOptionByKey('shot')?.label || 'Chupito'), String(counters.shot)],
+            [pdfText(counterOptionByKey('beer')?.label || 'Cerveza'), String(counters.beer)],
+            [pdfText(counterOptionByKey('cubata')?.label || 'Cubata'), String(counters.cubata)],
+            [pdfText(counterOptionByKey('cig')?.label || 'Cigarro'), String(counters.cig)],
+            [pdfText(counterOptionByKey('joint')?.label || 'Porro'), String(counters.joint)],
+            [pdfText(counterOptionByKey('extra')?.label || 'Extra'), String(counters.extra)]
+          ],
+          headStyles: { fillColor: [84, 63, 37] },
+          styles: { font: 'helvetica', fontSize: 10, cellPadding: 6, valign: 'middle' },
+          columnStyles: { 1: { halign: 'right', cellWidth: 100 } },
+          margin: { left: margin, right: margin }
+        });
+
+        doc.addPage();
+        doc.setTextColor(32, 25, 18);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.text('Clasificacion de la partida', margin, margin);
+        doc.autoTable({
+          startY: margin + 12,
+          theme: 'grid',
+          head: [['Jugador', 'Clase', 'Pts', 'Beb.', 'Fum.', 'Dro.', 'Mis.', 'Estado']],
+          body: buildPlayerRankingRows(),
+          headStyles: { fillColor: [84, 63, 37] },
+          styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 5, valign: 'middle' },
+          margin: { left: margin, right: margin },
+          columnStyles: {
+            2: { halign: 'right', cellWidth: 40 },
+            3: { halign: 'right', cellWidth: 34 },
+            4: { halign: 'right', cellWidth: 34 },
+            5: { halign: 'right', cellWidth: 34 },
+            6: { halign: 'right', cellWidth: 34 }
+          }
+        });
+
+        const missionRows = buildMissionRows();
+        doc.addPage();
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.text('Misiones de la partida', margin, margin);
+        doc.autoTable({
+          startY: margin + 12,
+          theme: 'grid',
+          head: [['Creada', 'Mision', 'Pts', 'Creador', 'Para', 'Completada por']],
+          body: missionRows.length ? missionRows : [['-', 'No hay misiones registradas.', '-', '-', '-', '-']],
+          headStyles: { fillColor: [84, 63, 37] },
+          styles: { font: 'helvetica', fontSize: 8.3, cellPadding: 5, valign: 'middle' },
+          margin: { left: margin, right: margin },
+          columnStyles: {
+            0: { cellWidth: 68 },
+            2: { halign: 'right', cellWidth: 30 },
+            3: { cellWidth: 62 },
+            4: { cellWidth: 110 },
+            5: { cellWidth: 120 }
+          }
+        });
+
+        const actionRows = buildOwnActionRows();
+        doc.addPage();
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.text('Historial del jugador en este movil', margin, margin);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.text('Aqui aparecen bebidas, ajustes, misiones y cambios de estado registrados localmente en este dispositivo.', margin, margin + 16, { maxWidth: pageWidth - margin * 2 });
+        doc.autoTable({
+          startY: margin + 34,
+          theme: 'grid',
+          head: [['Hora', 'Evento', 'Detalle']],
+          body: actionRows.length ? actionRows : [['-', 'Sin historial local', 'Este movil aun no ha guardado acciones para esta partida.']],
+          headStyles: { fillColor: [84, 63, 37] },
+          styles: { font: 'helvetica', fontSize: 9, cellPadding: 5, valign: 'middle' },
+          margin: { left: margin, right: margin },
+          columnStyles: {
+            0: { cellWidth: 78 },
+            1: { cellWidth: 170 },
+            2: { cellWidth: pageWidth - margin * 2 - 248 }
+          }
+        });
+
+        const footerPages = doc.getNumberOfPages();
+        for (let page = 1; page <= footerPages; page += 1) {
+          doc.setPage(page);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8.5);
+          doc.setTextColor(120, 108, 92);
+          doc.text(pdfText(`${currentParty.name} · ${currentPlayer.name}`), margin, pageHeight - 18);
+          doc.text(`${page}/${footerPages}`, pageWidth - margin, pageHeight - 18, { align: 'right' });
+        }
+
+        const safeParty = normalizeName(currentParty.name || 'partida').replace(/[^a-z0-9-_]+/g, '-');
+        const safePlayer = normalizeName(currentPlayer.name || 'jugador').replace(/[^a-z0-9-_]+/g, '-');
+        doc.save(`drunks-dangerous-${safeParty}-${safePlayer}.pdf`);
+
+        const locked = allPlayersFinished();
+        document.getElementById('finalStatus').textContent = locked
+          ? 'PDF generado. Todo el mundo ha terminado, asi que ya puedes salir.'
+          : 'PDF generado. Puedes seguir dentro o salir cuando quieras.';
+      } catch (error) {
+        console.error(error);
+        document.getElementById('finalStatus').textContent = 'No se pudo generar el PDF en este dispositivo.';
+      } finally {
+        exportInFlight = false;
+      }
+    }
+
+    async function exitParty() {
+      if (!currentParty) return;
+      const partyId = currentParty.id;
+      const playerId = localProfile?.playerId;
       if (allPlayersFinished()) {
         await cleanupPartyIfLocked();
         clearLocalProfile(partyId);
+        clearPlayerActionLog(partyId, playerId);
       }
       closeRealtime();
       currentParty = null;
@@ -1710,11 +2063,10 @@
       missions = [];
       selectedPlayerId = null;
       localProfile = null;
+      playerActionLog = [];
       showOnly('homeScreen');
       await loadPartiesList();
-      setHomeStatus(copied
-        ? 'Datos finales copiados. Puedes abrir o crear otra partida.'
-        : 'No se pudo copiar automaticamente. Se mostro el JSON en pantalla.');
+      setHomeStatus('Has salido de la partida.');
     }
 
     function renderHome() {
@@ -1735,7 +2087,8 @@
       document.getElementById('detailBackBtn').onclick = () => showOnly('gameScreen');
       document.getElementById('finishNightBtn').onclick = finishNight;
       document.getElementById('backToNightBtn').onclick = backToNight;
-      document.getElementById('exportAndExitBtn').onclick = exportAndExit;
+      document.getElementById('exportPdfBtn').onclick = exportPdfReport;
+      document.getElementById('exitPartyBtn').onclick = exitParty;
       document.getElementById('adminDeleteCancelBtn').onclick = () => closeAdminDeleteModal(true);
       document.getElementById('adminDeleteConfirmBtn').onclick = submitAdminDeleteModal;
       document.getElementById('adminDeletePasswordInput').addEventListener('keydown', e => {
