@@ -485,6 +485,41 @@
       font-size: 1rem;
     }
 
+    .mission-row.state-completed-self {
+      border-color: rgba(94, 161, 117, .72);
+      background: linear-gradient(180deg, rgba(61,122,82,.30), rgba(22,60,37,.22));
+      box-shadow: inset 0 0 0 1px rgba(94,161,117,.14);
+    }
+
+    .mission-row.state-locked-other {
+      border-color: rgba(185, 90, 90, .72);
+      background: linear-gradient(180deg, rgba(139,42,42,.28), rgba(70,16,16,.18));
+      box-shadow: inset 0 0 0 1px rgba(185,90,90,.14);
+    }
+
+    .mission-status {
+      font-weight: 600;
+    }
+
+    .mission-status.success {
+      color: #bce6c8;
+    }
+
+    .mission-status.danger {
+      color: #f0b2b2;
+    }
+
+    .mission-undo-button {
+      min-width: 48px;
+      padding: 10px 0;
+      border-radius: 14px;
+      font-size: 1.15rem;
+      line-height: 1;
+      background: rgba(255,255,255,.08);
+      border-color: rgba(255,255,255,.24);
+      color: var(--ink);
+    }
+
     .detail-list {
       display: grid;
       gap: 10px;
@@ -882,7 +917,7 @@
         <div class="field">
           <label for="missionAssignedMode">Destinatarios</label>
           <select id="missionAssignedMode">
-            <option value="all">Toda la partida</option>
+            <option value="all">Toda la party</option>
             <option value="subset">Personas concretas</option>
           </select>
         </div>
@@ -1102,7 +1137,7 @@
           };
         }
         case 'mission_created':
-          return { event: `Mision creada: ${entry.title || ''}`, detail: `${entry.points || 0} pts · ${entry.targets || 'Toda la partida'}` };
+          return { event: `Mision creada: ${entry.title || ''}`, detail: `${entry.points || 0} pts · ${entry.targets || 'Toda la party'}` };
         case 'mission_toggle':
           return { event: entry.completed ? `Mision completada: ${entry.title || ''}` : `Mision desmarcada: ${entry.title || ''}`, detail: entry.mode || '' };
         case 'night_finish':
@@ -1839,7 +1874,7 @@
         type: 'mission_created',
         title,
         points,
-        targets: assignedMode === 'all' ? 'Toda la partida' : targetIds.map(playerNameById).join(', '),
+        targets: assignedMode === 'all' ? 'Toda la party' : targetIds.map(playerNameById).join(', '),
         mode: completionMode
       });
       setGameStatus('Mision enviada.');
@@ -1866,7 +1901,7 @@
     }
 
     function missionTargetsText(mission) {
-      if (mission.assigned_mode === 'all') return 'Toda la partida';
+      if (mission.assigned_mode === 'all') return 'Toda la party';
       return (mission.target_player_ids || []).map(playerNameById).join(', ');
     }
 
@@ -1919,9 +1954,31 @@
       visibleMissions.forEach(mission => {
         const completedByMe = missionCompletedByPlayer(mission, currentPlayer?.id);
         const firstOwner = mission.first_completed_by_name || (mission.first_completed_by_player_id ? playerNameById(mission.first_completed_by_player_id) : '');
-        const canToggle = missionAssignedToCurrentPlayer(mission) && (mission.completion_mode === 'all' || !mission.first_completed_by_player_id || mission.first_completed_by_player_id === currentPlayer?.id);
+        const lockedByOther = mission.completion_mode === 'first' && !!mission.first_completed_by_player_id && mission.first_completed_by_player_id !== currentPlayer?.id;
+        const canToggle = missionAssignedToCurrentPlayer(mission) && !lockedByOther;
         const row = document.createElement('div');
-        row.className = 'mission-row';
+
+        let statusClass = '';
+        let footerText = completedByMe
+          ? 'Tu estado: Completada'
+          : (mission.completion_mode === 'first' && firstOwner ? `Completada por ${firstOwner}` : 'Tu estado: Pendiente');
+        let actionHtml = '';
+
+        if (completedByMe) {
+          row.className = 'mission-row state-completed-self';
+          statusClass = 'success';
+          actionHtml = `<button type="button" data-mission-id="${mission.id}" class="mission-undo-button" aria-label="Deshacer mision">✕</button>`;
+        } else if (lockedByOther) {
+          row.className = 'mission-row state-locked-other';
+          statusClass = 'danger';
+          actionHtml = '<span class="tag">Cerrada</span>';
+        } else {
+          row.className = 'mission-row';
+          actionHtml = canToggle
+            ? `<button type="button" data-mission-id="${mission.id}" class="ok">Completar</button>`
+            : '<span class="tag">Bloqueada</span>';
+        }
+
         row.innerHTML = `
           <div class="mission-header">
             <div>
@@ -1935,8 +1992,8 @@
             <p>Va para: ${missionTargetsText(mission)}</p>
           </div>
           <div class="mission-footer">
-            <p>${mission.completion_mode === 'first' && firstOwner ? `Completada por ${firstOwner}` : `Tu estado: ${completedByMe ? 'Completada' : 'Pendiente'}`}</p>
-            <div>${canToggle ? `<button type="button" data-mission-id="${mission.id}" class="${completedByMe ? '' : 'ok'}">${completedByMe ? 'Descompletar' : 'Completar'}</button>` : '<span class="tag">Bloqueada</span>'}</div>
+            <p class="mission-status ${statusClass}">${footerText}</p>
+            <div>${actionHtml}</div>
           </div>
         `;
         const btn = row.querySelector('button[data-mission-id]');
