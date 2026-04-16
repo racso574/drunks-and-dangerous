@@ -78,6 +78,18 @@
       box-shadow: var(--shadow);
     }
 
+
+    .action-strip {
+      margin-top: 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .action-strip .footnote {
+      margin: 0;
+      text-align: center;
+    }
+
     .section-title {
       display: flex;
       align-items: center;
@@ -758,7 +770,7 @@
       <section class="card">
         <div class="section-title">
           <h2>Stats de clase</h2>
-          <button id="toggleStatsBtn" class="subtle-button" type="button">Ocultar</button>
+          <button id="toggleStatsBtn" class="subtle-button" type="button">Minimizar</button>
         </div>
         <div class="stats-list" id="statsList"></div>
       </section>
@@ -773,25 +785,19 @@
         <div class="counter-grid" id="counters"></div>
       </section>
 
-      <section class="card">
-        <div class="section-title"><h2>Crear mision</h2></div>
-        <div class="mission-launch-card">
-          <button id="openMissionModalBtn" class="primary full-width" type="button">Crear mision</button>
-          <p class="footnote">Abre un popup para crear la mision y puedes cancelarlo cuando quieras.</p>
-        </div>
-      </section>
+      <div class="action-strip">
+        <button id="openMissionModalBtn" class="primary full-width" type="button">Crear mision</button>
+      </div>
 
       <section class="card">
         <div class="section-title"><h2>Misiones</h2></div>
         <div class="missions-list" id="missionsList"></div>
       </section>
 
-      <section class="card">
-        <div class="section-title"><h2>Finalizar</h2></div>
-        <p class="footnote">Los resultados completos solo se mostraran al finalizar tu noche.</p>
-        <button id="finishNightBtn" class="primary full-width" type="button" style="margin-top:12px">Finalizar noche</button>
-        <p class="footnote" id="gameStatus" style="margin-top:10px">Listo para jugar.</p>
-      </section>
+      <div class="action-strip">
+        <button id="finishNightBtn" class="primary full-width" type="button">Finalizar noche</button>
+        <p class="footnote" id="gameStatus">Listo para jugar.</p>
+      </div>
     </div>
 
     <section class="card hidden" id="playerDetailScreen">
@@ -1598,7 +1604,7 @@
       const btn = document.getElementById('toggleStatsBtn');
       if (!wrap || !btn) return;
       wrap.classList.toggle('hidden', statsCollapsed);
-      btn.textContent = statsCollapsed ? 'Ver' : 'Ocultar';
+      btn.textContent = statsCollapsed ? 'Mostrar' : 'Minimizar';
     }
 
     function toggleStatsVisibility() {
@@ -2356,7 +2362,13 @@
       document.getElementById('setupPhotoBox').onclick = () => document.getElementById('setupPhotoInput').click();
       document.getElementById('setupPhotoInput').onchange = e => handleSetupPhotoChange(e.target.files?.[0]);
       document.getElementById('missionAssignedMode').onchange = renderMissionTargets;
+      document.getElementById('openMissionModalBtn').onclick = openMissionModal;
+      document.getElementById('cancelMissionModalBtn').onclick = closeMissionModal;
       document.getElementById('createMissionBtn').onclick = createMission;
+      document.getElementById('toggleStatsBtn').onclick = toggleStatsVisibility;
+      document.getElementById('missionModal').addEventListener('click', e => {
+        if (e.target.id === 'missionModal') closeMissionModal();
+      });
       document.getElementById('detailBackBtn').onclick = () => showOnly('gameScreen');
       document.getElementById('finishNightBtn').onclick = finishNight;
       document.getElementById('backToNightBtn').onclick = backToNight;
@@ -2367,6 +2379,11 @@
       document.getElementById('adminDeletePasswordInput').addEventListener('keydown', e => {
         if (e.key === 'Enter') submitAdminDeleteModal();
         if (e.key === 'Escape') closeAdminDeleteModal(true);
+      });
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && document.getElementById('missionModal').classList.contains('hidden') === false) {
+          closeMissionModal();
+        }
       });
       document.getElementById('adminDeleteModal').addEventListener('click', e => {
         if (e.target.id === 'adminDeleteModal') closeAdminDeleteModal(true);
