@@ -40,6 +40,7 @@
     .app {
       max-width: 820px;
       margin: 0 auto;
+      padding-top: 92px;
     }
 
     .hidden {
@@ -47,9 +48,12 @@
     }
 
     .title {
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(820px, calc(100% - 28px));
+      z-index: 100;
       padding: 14px 16px;
       border: 1px solid var(--line);
       border-radius: 24px;
@@ -675,6 +679,23 @@
       margin-top: 12px;
     }
 
+    .section-title .subtle-button {
+      padding: 8px 12px;
+      font-size: .88rem;
+      border-radius: 999px;
+    }
+
+    .mission-launch-card {
+      display: grid;
+      gap: 10px;
+    }
+
+    .modal-card.mission-modal-card {
+      width: min(100%, 560px);
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+    }
+
   </style>
 </head>
 <body>
@@ -735,7 +756,10 @@
       </section>
 
       <section class="card">
-        <div class="section-title"><h2>Stats de clase</h2></div>
+        <div class="section-title">
+          <h2>Stats de clase</h2>
+          <button id="toggleStatsBtn" class="subtle-button" type="button">Ocultar</button>
+        </div>
         <div class="stats-list" id="statsList"></div>
       </section>
 
@@ -751,33 +775,10 @@
 
       <section class="card">
         <div class="section-title"><h2>Crear mision</h2></div>
-        <div class="grid-2">
-          <div class="field">
-            <label for="missionTitleInput">Titulo</label>
-            <input id="missionTitleInput" type="text" placeholder="Ej. Abrir conversacion con otra mesa" />
-          </div>
-          <div class="field">
-            <label for="missionPointsInput">Puntos</label>
-            <input id="missionPointsInput" type="number" min="0" value="3" />
-          </div>
-          <div class="field">
-            <label for="missionCompletionMode">Ganadores</label>
-            <select id="missionCompletionMode">
-              <option value="first">1 ganador</option>
-              <option value="all">Multiples ganadores</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="missionAssignedMode">Destinatarios</label>
-            <select id="missionAssignedMode">
-              <option value="all">Toda la partida</option>
-              <option value="subset">Personas concretas</option>
-            </select>
-          </div>
+        <div class="mission-launch-card">
+          <button id="openMissionModalBtn" class="primary full-width" type="button">Crear mision</button>
+          <p class="footnote">Abre un popup para crear la mision y puedes cancelarlo cuando quieras.</p>
         </div>
-        <div class="checkbox-list hidden" id="missionTargetsBox"></div>
-        <button id="createMissionBtn" class="primary full-width" type="button" style="margin-top:12px">Enviar mision</button>
-        <p class="footnote" id="missionCreateStatus" style="margin-top:10px">Si eliges personas concretas, puedes marcar 1, 2 o 3.</p>
       </section>
 
       <section class="card">
@@ -837,11 +838,6 @@
 
   
 
-  <button class="fab-menu-preview hidden" id="floatingMenuPreviewBtn" type="button" aria-label="Menu rapido" title="Menu rapido">
-    <span aria-hidden="true">⋯</span>
-    <span class="fab-menu-preview-label">Menu rapido</span>
-  </button>
-
   <div class="modal-backdrop hidden" id="adminDeleteModal" aria-hidden="true">
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="adminDeleteTitle">
       <h3 id="adminDeleteTitle">Modo admin</h3>
@@ -853,6 +849,43 @@
       <div class="screen-actions">
         <button id="adminDeleteCancelBtn" type="button">Cancelar</button>
         <button id="adminDeleteConfirmBtn" class="warn" type="button">Borrar ahora</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal-backdrop hidden" id="missionModal" aria-hidden="true">
+    <div class="modal-card mission-modal-card" role="dialog" aria-modal="true" aria-labelledby="missionModalTitle">
+      <h3 id="missionModalTitle">Crear mision</h3>
+      <div class="grid-2">
+        <div class="field">
+          <label for="missionTitleInput">Titulo</label>
+          <input id="missionTitleInput" type="text" placeholder="Ej. Abrir conversacion con otra mesa" />
+        </div>
+        <div class="field">
+          <label for="missionPointsInput">Puntos</label>
+          <input id="missionPointsInput" type="number" min="0" value="3" />
+        </div>
+        <div class="field">
+          <label for="missionCompletionMode">Ganadores</label>
+          <select id="missionCompletionMode">
+            <option value="first">1 ganador</option>
+            <option value="all">Multiples ganadores</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="missionAssignedMode">Destinatarios</label>
+          <select id="missionAssignedMode">
+            <option value="all">Toda la partida</option>
+            <option value="subset">Personas concretas</option>
+          </select>
+        </div>
+      </div>
+      <div class="checkbox-list hidden" id="missionTargetsBox" style="margin-top:10px"></div>
+      <p class="footnote" id="missionCreateStatus" style="margin-top:10px">Si eliges personas concretas, puedes marcar 1, 2 o 3.</p>
+      <div class="screen-actions" style="margin-top:12px">
+        <button id="cancelMissionModalBtn" type="button">Cancelar</button>
+        <button id="createMissionBtn" class="primary" type="button">Crear mision</button>
       </div>
     </div>
   </div>
@@ -929,6 +962,7 @@
     let secretPartyTapState = { partyId: null, count: 0, lastTapAt: 0 };
     let secretPartyTapTimer = null;
     let pendingSecretDeleteParty = null;
+    let statsCollapsed = false;
     let playerActionLog = [];
     let exportInFlight = false;
     let pdfLibsPromise = null;
@@ -1084,11 +1118,7 @@
       document.getElementById('gameStatus').textContent = message;
     }
 
-    function updateFloatingMenuPreview(screenId) {
-      const fab = document.getElementById('floatingMenuPreviewBtn');
-      if (!fab) return;
-      const shouldShow = screenId === 'gameScreen' && !!currentParty && !!currentPlayer && currentPlayer.night_finished !== true;
-      fab.classList.toggle('hidden', !shouldShow);
+    function updateFloatingMenuPreview() {
     }
 
     function showOnly(screenId) {
@@ -1563,6 +1593,19 @@
       updateSelfPhotoUI();
     }
 
+    function updateStatsVisibility() {
+      const wrap = document.getElementById('statsList');
+      const btn = document.getElementById('toggleStatsBtn');
+      if (!wrap || !btn) return;
+      wrap.classList.toggle('hidden', statsCollapsed);
+      btn.textContent = statsCollapsed ? 'Ver' : 'Ocultar';
+    }
+
+    function toggleStatsVisibility() {
+      statsCollapsed = !statsCollapsed;
+      updateStatsVisibility();
+    }
+
     function renderStats() {
       const wrap = document.getElementById('statsList');
       wrap.innerHTML = '';
@@ -1574,6 +1617,7 @@
         row.innerHTML = `<div>${stat.label}</div><div class="tag mono">x${preset[stat.key]}</div>`;
         wrap.appendChild(row);
       });
+      updateStatsVisibility();
     }
 
     function renderPlayers() {
@@ -1707,6 +1751,30 @@
       });
     }
 
+    function resetMissionForm() {
+      document.getElementById('missionTitleInput').value = '';
+      document.getElementById('missionPointsInput').value = '3';
+      document.getElementById('missionCompletionMode').value = 'first';
+      document.getElementById('missionAssignedMode').value = 'all';
+      document.getElementById('missionCreateStatus').textContent = 'Si eliges personas concretas, puedes marcar 1, 2 o 3.';
+      renderMissionTargets();
+    }
+
+    function openMissionModal() {
+      if (!currentParty || !currentPlayer) return;
+      const modal = document.getElementById('missionModal');
+      modal.classList.remove('hidden');
+      modal.setAttribute('aria-hidden', 'false');
+      resetMissionForm();
+      window.setTimeout(() => document.getElementById('missionTitleInput').focus(), 20);
+    }
+
+    function closeMissionModal() {
+      const modal = document.getElementById('missionModal');
+      modal.classList.add('hidden');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
     function renderMissionTargets() {
       const wrap = document.getElementById('missionTargetsBox');
       const mode = document.getElementById('missionAssignedMode').value;
@@ -1761,11 +1829,6 @@
         document.getElementById('missionCreateStatus').textContent = 'No se pudo enviar la mision.';
         return;
       }
-      document.getElementById('missionTitleInput').value = '';
-      document.getElementById('missionPointsInput').value = '3';
-      document.getElementById('missionCompletionMode').value = 'first';
-      document.getElementById('missionAssignedMode').value = 'all';
-      renderMissionTargets();
       appendPlayerActionLog({
         type: 'mission_created',
         title,
@@ -1773,7 +1836,9 @@
         targets: assignedMode === 'all' ? 'Toda la partida' : targetIds.map(playerNameById).join(', '),
         mode: completionMode
       });
-      document.getElementById('missionCreateStatus').textContent = 'Mision enviada.';
+      setGameStatus('Mision enviada.');
+      closeMissionModal();
+      resetMissionForm();
       await loadPartyData();
     }
 
