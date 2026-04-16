@@ -369,12 +369,27 @@
       background: rgba(255,255,255,.02);
     }
 
+    .counter-option-main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
     .counter-option-name {
       min-width: 0;
       font-size: 1rem;
       color: var(--ink);
       line-height: 1.15;
       word-break: break-word;
+    }
+
+    .counter-option-qty {
+      flex: 0 0 auto;
+      min-width: 28px;
+      padding: 4px 8px;
+      font-size: .8rem;
+      justify-content: center;
     }
 
     .counter-action-row {
@@ -506,6 +521,45 @@
       font-variant-numeric: tabular-nums;
     }
 
+
+    .fab-menu-preview {
+      position: fixed;
+      right: 16px;
+      bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+      width: 58px;
+      height: 58px;
+      border-radius: 999px;
+      border: 1px solid rgba(216,180,106,.72);
+      background: linear-gradient(180deg, rgba(216,180,106,.28), rgba(43,34,25,.92));
+      color: var(--gold-2);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      box-shadow: 0 14px 28px rgba(0,0,0,.34);
+      z-index: 30;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      touch-action: manipulation;
+    }
+
+    .fab-menu-preview:active {
+      transform: translateY(1px) scale(.98);
+    }
+
+    .fab-menu-preview-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
     @media (max-width: 640px) {
       .grid-2,
       .summary,
@@ -535,6 +589,20 @@
 
       .counter-option {
         grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+      }
+
+      .counter-option-main {
+        gap: 6px;
+      }
+
+      .counter-option-name {
+        font-size: .96rem;
+      }
+
+      .counter-option-qty {
+        min-width: 24px;
+        padding: 4px 7px;
       }
 
       .counter-action-row {
@@ -551,6 +619,13 @@
         width: 48px;
         min-width: 48px;
         min-height: 48px;
+      }
+
+      .fab-menu-preview {
+        right: 14px;
+        width: 54px;
+        height: 54px;
+        font-size: 1.4rem;
       }
 
       .party-row,
@@ -761,6 +836,12 @@
   </div>
 
   
+
+  <button class="fab-menu-preview" id="floatingMenuPreviewBtn" type="button" aria-label="Menu rapido" title="Menu rapido">
+    <span aria-hidden="true">⋯</span>
+    <span class="fab-menu-preview-label">Menu rapido</span>
+  </button>
+
   <div class="modal-backdrop hidden" id="adminDeleteModal" aria-hidden="true">
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="adminDeleteTitle">
       <h3 id="adminDeleteTitle">Modo admin</h3>
@@ -809,7 +890,7 @@
         options: [
           { key: 'shot', label: '🥃 Chupito', points: 1 },
           { key: 'beer', label: '🍺 Cerveza', points: 2 },
-          { key: 'cubata', label: '🥃 Cubata', points: 3 }
+          { key: 'cubata', label: '🍹 Cubata', points: 3 }
         ]
       },
       {
@@ -1599,7 +1680,10 @@
           const row = document.createElement('div');
           row.className = 'counter-option';
           row.innerHTML = `
-            <div class="counter-option-name">${option.label}</div>
+            <div class="counter-option-main">
+              <div class="counter-option-name">${option.label}</div>
+              <div class="tag mono counter-option-qty">${counters[option.key]}</div>
+            </div>
             <div class="counter-action-row">
               <button type="button" class="counter-add" aria-label="Añadir ${option.label}">Añadir</button>
               <button type="button" class="subtle-button counter-minus" aria-label="Quitar ${option.label}">-</button>
