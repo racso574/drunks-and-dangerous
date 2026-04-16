@@ -38,7 +38,7 @@
     }
 
     .app {
-      max-width: 780px;
+      max-width: 820px;
       margin: 0 auto;
     }
 
@@ -47,36 +47,22 @@
     }
 
     .title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
       padding: 14px 16px;
       border: 1px solid var(--line);
       border-radius: 24px;
       background: linear-gradient(180deg, rgba(216,180,106,.09), rgba(255,255,255,.02));
       box-shadow: var(--shadow);
-      position: sticky;
-      top: 10px;
-      z-index: 10;
       backdrop-filter: blur(8px);
     }
 
-    .title h1,
-    .title p {
-      margin: 0;
-    }
-
     .title h1 {
+      margin: 0;
       font-size: clamp(1.5rem, 5vw, 2.3rem);
       letter-spacing: .04em;
       color: var(--gold-2);
-    }
-
-    .title p {
-      color: var(--muted);
-      font-size: .88rem;
-      text-align: right;
     }
 
     .card {
@@ -132,12 +118,6 @@
       outline: none;
     }
 
-    .footnote {
-      color: var(--muted);
-      font-size: .82rem;
-      line-height: 1.4;
-    }
-
     button {
       appearance: none;
       border: 1px solid var(--line);
@@ -150,9 +130,14 @@
     }
 
     button.primary {
-      background: linear-gradient(180deg, rgba(216,180,106,.28), rgba(216,180,106,.12));
+      background: linear-gradient(180deg, rgba(216,180,106,.35), rgba(216,180,106,.14));
       border-color: var(--gold);
       color: var(--gold-2);
+    }
+
+    button.ok {
+      background: rgba(61,122,82,.22);
+      border-color: #5ea175;
     }
 
     button.warn {
@@ -160,13 +145,20 @@
       border-color: #b95a5a;
     }
 
-    button.ok {
-      background: rgba(61,122,82,.2);
-      border-color: #5ea175;
+    .subtle-button {
+      background: rgba(255,255,255,.04);
+      border-color: rgba(255,255,255,.12);
+      color: var(--muted);
     }
 
     .full-width {
       width: 100%;
+    }
+
+    .footnote {
+      color: var(--muted);
+      font-size: .82rem;
+      line-height: 1.4;
     }
 
     .class-pills {
@@ -192,15 +184,15 @@
       color: var(--gold-2);
     }
 
-    .setup-photo {
+    .photo-row,
+    .player-header {
       display: grid;
       grid-template-columns: 88px 1fr;
       gap: 12px;
       align-items: center;
-      margin-bottom: 12px;
     }
 
-    .profile-photo-box {
+    .photo-box {
       width: 88px;
       height: 88px;
       border: 1px solid var(--line);
@@ -212,17 +204,16 @@
       cursor: pointer;
       padding: 0;
       appearance: none;
-      touch-action: manipulation;
     }
 
-    .profile-photo-box img {
+    .photo-box img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
     }
 
-    .profile-photo-box .placeholder {
+    .photo-box .placeholder {
       position: absolute;
       inset: 0;
       display: flex;
@@ -245,19 +236,6 @@
       border: 0;
     }
 
-    .player-box {
-      display: grid;
-      grid-template-columns: 72px 1fr;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .player-box .profile-photo-box {
-      width: 72px;
-      height: 72px;
-      cursor: default;
-    }
-
     .player-meta h3,
     .player-meta p {
       margin: 0;
@@ -268,34 +246,47 @@
       margin-bottom: 4px;
     }
 
-    .stats-list,
     .players-list,
-    .missions-list {
+    .stats-list,
+    .party-list,
+    .missions-list,
+    .checkbox-list {
       display: grid;
       gap: 10px;
     }
 
-    .stat-row,
+    .party-row,
     .player-row,
-    .mission-row {
+    .stat-row,
+    .mission-row,
+    .detail-row,
+    .checkbox-row {
       border: 1px solid rgba(216,180,106,.18);
       border-radius: 14px;
       padding: 10px;
       background: rgba(255,255,255,.015);
     }
 
-    .stat-row {
+    .party-row,
+    .player-row,
+    .stat-row,
+    .mission-header,
+    .mission-meta,
+    .mission-footer,
+    .detail-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .party-row {
+      cursor: pointer;
     }
 
     .player-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
+      cursor: pointer;
     }
 
     .tag {
@@ -312,7 +303,6 @@
 
     .counter-grid {
       display: grid;
-      grid-template-columns: 1fr;
       gap: 10px;
     }
 
@@ -334,11 +324,12 @@
       font-size: 2rem;
       font-weight: bold;
       margin: 4px 0 10px;
+      color: var(--gold-2);
     }
 
     .counter-options {
       display: grid;
-      gap: 8px;
+      gap: 10px;
       margin-top: 10px;
     }
 
@@ -347,23 +338,34 @@
       grid-template-columns: minmax(0, 1fr) auto;
       gap: 10px;
       align-items: center;
-      border: 1px solid rgba(216,180,106,.18);
+      border: 1px solid rgba(216,180,106,.45);
       border-radius: 14px;
-      padding: 10px;
-      background: rgba(255,255,255,.02);
+      padding: 12px;
+      background: linear-gradient(180deg, rgba(216,180,106,.14), rgba(255,255,255,.02));
       text-align: left;
       cursor: pointer;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, .18);
+      transition: transform .08s ease, border-color .12s ease, box-shadow .12s ease;
+    }
+
+    .counter-option:hover {
+      border-color: var(--gold);
+      box-shadow: 0 10px 18px rgba(0, 0, 0, .24);
+    }
+
+    .counter-option:active {
+      transform: translateY(1px) scale(.995);
     }
 
     .counter-option strong {
       display: block;
-      font-size: .98rem;
-      color: var(--ink);
+      font-size: 1rem;
+      color: var(--gold-2);
     }
 
     .counter-option span {
       display: block;
-      margin-top: 3px;
+      margin-top: 4px;
       font-size: .82rem;
       color: var(--muted);
     }
@@ -378,27 +380,24 @@
       min-width: 28px;
       text-align: right;
       font-size: 1.15rem;
-      color: var(--gold-2);
+      color: var(--ink);
     }
 
-    .counter-add {
-      min-width: 44px;
+    .counter-minus {
+      min-width: 36px;
+      min-height: 36px;
       padding-inline: 0;
+      opacity: .72;
     }
-    .checkbox-list {
-      display: grid;
-      gap: 8px;
-      margin-top: 10px;
+
+    .counter-minus:hover {
+      opacity: 1;
     }
 
     .checkbox-row {
       display: flex;
       align-items: center;
       gap: 10px;
-      border: 1px solid rgba(216,180,106,.18);
-      border-radius: 14px;
-      padding: 10px;
-      background: rgba(255,255,255,.02);
     }
 
     .checkbox-row input {
@@ -406,33 +405,28 @@
       margin: 0;
     }
 
-    .mission-header,
-    .mission-meta,
-    .mission-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .mission-header h3,
-    .mission-header p,
-    .mission-meta p,
-    .mission-footer p {
+    .mission-row h3,
+    .mission-row p {
       margin: 0;
     }
 
-    .mission-header h3 {
+    .mission-row h3 {
       color: var(--gold-2);
       font-size: 1rem;
     }
 
-    .mission-meta,
-    .mission-footer {
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: .84rem;
+    .detail-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .detail-list .detail-row {
+      justify-content: flex-start;
+    }
+
+    .detail-list .tag {
+      margin-left: auto;
     }
 
     .summary {
@@ -462,7 +456,7 @@
       font-weight: bold;
     }
 
-    .summary-actions {
+    .screen-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
@@ -476,17 +470,19 @@
     @media (max-width: 640px) {
       .grid-2,
       .summary,
-      .summary-actions,
-      .setup-photo,
-      .player-box {
+      .screen-actions,
+      .photo-row,
+      .player-header {
         grid-template-columns: 1fr;
       }
 
-      .stat-row,
+      .party-row,
       .player-row,
+      .stat-row,
       .mission-header,
       .mission-meta,
-      .mission-footer {
+      .mission-footer,
+      .detail-row {
         align-items: flex-start;
       }
     }
@@ -495,26 +491,25 @@
 <body>
   <div class="app">
     <div class="title">
-      <div>
-        <h1>Drunks & Dangerous</h1>
-      </div>
-      <p id="titleMeta">Sin conectar</p>
+      <h1>Drunks & Dangerous</h1>
     </div>
 
-    <section class="card" id="connectCard">
-      <div class="section-title"><h2>Conectar a partida</h2></div>
+    <section class="card" id="homeScreen">
+      <div class="section-title"><h2>Partidas</h2></div>
       <div class="field">
-        <label for="partyNameInput">Nombre de la partida</label>
+        <label for="partyNameInput">Crear partida</label>
         <input id="partyNameInput" type="text" placeholder="Ej. sabado-centro" />
       </div>
-      <button id="connectPartyBtn" class="primary full-width" type="button" style="margin-top:12px">Conectar</button>
-      <p class="footnote" id="connectStatus" style="margin-top:10px">Si la partida no existe, te preguntare si quieres crearla.</p>
+      <button id="createPartyBtn" class="primary full-width" type="button" style="margin-top:12px">Crear partida</button>
+      <p class="footnote" id="homeStatus" style="margin-top:10px">Tambien puedes tocar una partida existente de la lista.</p>
+      <div class="section-title" style="margin-top:18px"><h2>Partidas creadas</h2></div>
+      <div class="party-list" id="partyList"></div>
     </section>
 
-    <section class="card hidden" id="setupCard">
+    <section class="card hidden" id="setupScreen">
       <div class="section-title"><h2>Crear personaje</h2></div>
-      <div class="setup-photo">
-        <button class="profile-photo-box" id="setupPhotoBox" type="button" aria-label="Subir foto">
+      <div class="photo-row">
+        <button class="photo-box" id="setupPhotoBox" type="button" aria-label="Subir foto">
           <img id="setupPhotoImg" alt="Foto de perfil" style="display:none" />
           <div class="placeholder" id="setupPhotoPlaceholder">+</div>
         </button>
@@ -528,34 +523,36 @@
         <label>Clase</label>
         <div class="class-pills" id="setupClassPills"></div>
       </div>
-      <button id="createPlayerBtn" class="primary full-width" type="button" style="margin-top:12px">Entrar en la partida</button>
+      <div class="screen-actions">
+        <button id="setupBackBtn" type="button">Volver</button>
+        <button id="createPlayerBtn" class="primary" type="button">Entrar</button>
+      </div>
       <p class="footnote" id="setupStatus" style="margin-top:10px">Nombre, foto y clase quedaran bloqueados despues de entrar.</p>
     </section>
 
-    <div class="hidden" id="gameShell">
+    <div class="hidden" id="gameScreen">
       <section class="card">
         <div class="section-title"><h2>Tu ficha</h2></div>
-        <div class="player-box">
-          <button class="profile-photo-box" id="playerPhotoBox" type="button" aria-label="Foto de perfil" disabled>
-            <img id="playerPhotoImg" alt="Foto de perfil" style="display:none" />
-            <div class="placeholder" id="playerPhotoPlaceholder">+</div>
+        <div class="player-header">
+          <button class="photo-box" id="selfPhotoBox" type="button" disabled>
+            <img id="selfPhotoImg" alt="Foto de perfil" style="display:none" />
+            <div class="placeholder" id="selfPhotoPlaceholder">+</div>
           </button>
           <div class="player-meta">
-            <h3 id="playerNameText">-</h3>
-            <p id="playerClassText" class="footnote">-</p>
-            <p id="playerPartyText" class="footnote">-</p>
+            <h3 id="selfNameText">-</h3>
+            <p id="selfClassText" class="footnote">-</p>
           </div>
         </div>
       </section>
 
       <section class="card">
-        <div class="section-title"><h2>Jugadores</h2></div>
-        <div class="players-list" id="playersList"></div>
+        <div class="section-title"><h2>Stats de clase</h2></div>
+        <div class="stats-list" id="statsList"></div>
       </section>
 
       <section class="card">
-        <div class="section-title"><h2>Stats de clase</h2></div>
-        <div class="stats-list" id="statsList"></div>
+        <div class="section-title"><h2>Jugadores</h2></div>
+        <div class="players-list" id="playersList"></div>
       </section>
 
       <section class="card">
@@ -575,23 +572,23 @@
             <input id="missionPointsInput" type="number" min="0" value="3" />
           </div>
           <div class="field">
-            <label for="missionAssignedMode">A quien va</label>
-            <select id="missionAssignedMode">
-              <option value="all">A todos</option>
-              <option value="subset">A jugadores concretos</option>
+            <label for="missionCompletionMode">Ganadores</label>
+            <select id="missionCompletionMode">
+              <option value="first">1 ganador</option>
+              <option value="all">Multiples ganadores</option>
             </select>
           </div>
           <div class="field">
-            <label for="missionCompletionMode">Quien la puede cerrar</label>
-            <select id="missionCompletionMode">
-              <option value="all">Todos los asignados</option>
-              <option value="first">Solo el primero</option>
+            <label for="missionAssignedMode">Destinatarios</label>
+            <select id="missionAssignedMode">
+              <option value="all">Toda la partida</option>
+              <option value="subset">Personas concretas</option>
             </select>
           </div>
         </div>
         <div class="checkbox-list hidden" id="missionTargetsBox"></div>
         <button id="createMissionBtn" class="primary full-width" type="button" style="margin-top:12px">Enviar mision</button>
-        <p class="footnote" id="missionCreateStatus" style="margin-top:10px">Puedes mandarla a toda la party o a 1, 2 o 3 jugadores concretos.</p>
+        <p class="footnote" id="missionCreateStatus" style="margin-top:10px">Si eliges personas concretas, puedes marcar 1, 2 o 3.</p>
       </section>
 
       <section class="card">
@@ -600,46 +597,59 @@
       </section>
 
       <section class="card">
-        <div class="section-title"><h2>Logros</h2></div>
-        <p class="footnote">De momento queda preparado para la fase siguiente.</p>
-      </section>
-
-      <section class="card">
         <div class="section-title"><h2>Resumen</h2></div>
         <div class="summary">
-          <div class="score-box">
-            <h3>Puntuacion total</h3>
-            <div class="big mono" id="totalScore">0</div>
-          </div>
-          <div class="score-box">
-            <h3>Bebidas totales</h3>
-            <div class="big mono" id="totalDrinks">0</div>
-          </div>
-          <div class="score-box">
-            <h3>Fumadas totales</h3>
-            <div class="big mono" id="totalSmoked">0</div>
-          </div>
-          <div class="score-box">
-            <h3>Drogas totales</h3>
-            <div class="big mono" id="totalDrugs">0</div>
-          </div>
-          <div class="score-box">
-            <h3>Misiones completadas</h3>
-            <div class="big mono" id="completedMissions">0</div>
-          </div>
-          <div class="score-box">
-            <h3>Logros obtenidos</h3>
-            <div class="big mono" id="earnedAchievements">0</div>
-          </div>
+          <div class="score-box"><h3>Puntuacion total</h3><div class="big mono" id="totalScore">0</div></div>
+          <div class="score-box"><h3>Bebidas totales</h3><div class="big mono" id="totalDrinks">0</div></div>
+          <div class="score-box"><h3>Fumadas totales</h3><div class="big mono" id="totalSmoked">0</div></div>
+          <div class="score-box"><h3>Drogas totales</h3><div class="big mono" id="totalDrugs">0</div></div>
+          <div class="score-box"><h3>Misiones completadas</h3><div class="big mono" id="completedMissions">0</div></div>
+          <div class="score-box"><h3>Logros obtenidos</h3><div class="big mono" id="earnedAchievements">0</div></div>
         </div>
-        <div class="summary-actions">
-          <button id="exportLocalBtn" class="primary" type="button">Exportar local</button>
-          <button id="importLocalBtn" type="button">Importar local</button>
-        </div>
-        <button id="wipeLocalBtn" class="warn full-width" type="button" style="margin-top:10px">Borrar solo datos locales</button>
-        <p class="footnote" id="statusText" style="margin-top:10px">Preparando guardado</p>
+        <button id="finishNightBtn" class="primary full-width" type="button" style="margin-top:12px">Finalizar noche</button>
+        <p class="footnote" id="gameStatus" style="margin-top:10px">Listo para jugar.</p>
       </section>
     </div>
+
+    <section class="card hidden" id="playerDetailScreen">
+      <div class="section-title"><h2>Ficha de jugador</h2></div>
+      <div class="player-header">
+        <div class="photo-box">
+          <div class="placeholder">?</div>
+        </div>
+        <div class="player-meta">
+          <h3 id="detailNameText">-</h3>
+          <p id="detailClassText" class="footnote">-</p>
+        </div>
+      </div>
+      <div class="summary" style="margin-top:12px">
+        <div class="score-box"><h3>Puntuacion</h3><div class="big mono" id="detailScoreText">0</div></div>
+        <div class="score-box"><h3>Bebidas</h3><div class="big mono" id="detailDrinksText">0</div></div>
+        <div class="score-box"><h3>Fumadas</h3><div class="big mono" id="detailSmokedText">0</div></div>
+        <div class="score-box"><h3>Drogas</h3><div class="big mono" id="detailDrugsText">0</div></div>
+        <div class="score-box"><h3>Misiones completadas</h3><div class="big mono" id="detailMissionsText">0</div></div>
+        <div class="score-box"><h3>Logros</h3><div class="big mono">Pendiente</div></div>
+      </div>
+      <div class="detail-list" id="detailMissionList"></div>
+      <button id="detailBackBtn" class="full-width" type="button" style="margin-top:12px">Volver</button>
+    </section>
+
+    <section class="card hidden" id="finalScreen">
+      <div class="section-title"><h2>Estadisticas finales</h2></div>
+      <div class="summary">
+        <div class="score-box"><h3>Puntuacion total</h3><div class="big mono" id="finalScore">0</div></div>
+        <div class="score-box"><h3>Bebidas totales</h3><div class="big mono" id="finalDrinks">0</div></div>
+        <div class="score-box"><h3>Fumadas totales</h3><div class="big mono" id="finalSmoked">0</div></div>
+        <div class="score-box"><h3>Drogas totales</h3><div class="big mono" id="finalDrugs">0</div></div>
+        <div class="score-box"><h3>Misiones completadas</h3><div class="big mono" id="finalMissions">0</div></div>
+        <div class="score-box"><h3>Logros obtenidos</h3><div class="big mono" id="finalAchievements">0</div></div>
+      </div>
+      <p class="footnote" id="finalStatus" style="margin-top:10px">Cuando todo el mundo finalice la noche, ya no se podra volver atras.</p>
+      <div class="screen-actions">
+        <button id="backToNightBtn" type="button">Volver a la noche</button>
+        <button id="exportAndExitBtn" class="primary" type="button">Exportar local y salir</button>
+      </div>
+    </section>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -672,9 +682,9 @@
         label: 'Bebida',
         stat: 'alcohol',
         options: [
-          { key: 'shot', label: '?? Chupito', points: 1 },
-          { key: 'beer', label: '?? Cerveza', points: 2 },
-          { key: 'cubata', label: '?? Cubata', points: 3 }
+          { key: 'shot', label: '🥃 Chupito', points: 1 },
+          { key: 'beer', label: '🍺 Cerveza', points: 2 },
+          { key: 'cubata', label: '🥃 Cubata', points: 3 }
         ]
       },
       {
@@ -682,8 +692,8 @@
         label: 'Fumar',
         stat: 'physical',
         options: [
-          { key: 'cig', label: '?? Cigarro', points: 1, monkAllowed: true },
-          { key: 'joint', label: '?? Porro', points: 3, monkAllowed: false }
+          { key: 'cig', label: '🚬 Cigarro', points: 1, monkAllowed: true },
+          { key: 'joint', label: '🍃 Porro', points: 3, monkAllowed: false }
         ]
       },
       {
@@ -691,50 +701,28 @@
         label: 'Sustancias',
         stat: 'chaos',
         options: [
-          { key: 'extra', label: '?? Sin especificar', points: 5 }
+          { key: 'extra', label: '💊 Sin especificar', points: 5 }
         ]
       }
     ];
 
+    let parties = [];
+    let players = [];
+    let missions = [];
     let currentParty = null;
     let currentPlayer = null;
     let localProfile = null;
-    let players = [];
-    let missions = [];
     let setupPhoto = null;
     let selectedSetupClass = 'Bardo';
+    let selectedPlayerId = null;
     let realtimeChannels = [];
-    let localCounters = defaultCounters();
-    function defaultCounters() {
-      return {
-        shot: 0,
-        beer: 0,
-        cubata: 0,
-        cig: 0,
-        joint: 0,
-        extra: 0
-      };
-    }
-
+    let cleanupInFlight = false;
     function normalizeName(value) {
       return String(value || '').trim().toLowerCase();
     }
 
-    function partyPlayerStorageKey(partyId) {
-      return `dd-player:${partyId}`;
-    }
-
-    function counterStorageKey(partyId, playerId) {
-      return `dd-counters:${partyId}:${playerId}`;
-    }
-
-    function setStatus(message) {
-      document.getElementById('statusText').textContent = message;
-    }
-
-    function statMultiplier(statKey) {
-      if (!currentPlayer) return 1;
-      return Number(CLASS_PRESETS[currentPlayer.class_id]?.[statKey] || 1);
+    function defaultCounters() {
+      return { shot: 0, beer: 0, cubata: 0, cig: 0, joint: 0, extra: 0 };
     }
 
     function sanitizeCounterValue(value) {
@@ -743,94 +731,166 @@
       return Math.max(0, Math.floor(num));
     }
 
-    function isMonkRestricted(option) {
-      return currentPlayer?.class_id === 'Monje' && option.monkAllowed !== true;
+    function sanitizeCounters(raw) {
+      return {
+        shot: sanitizeCounterValue(raw?.shot),
+        beer: sanitizeCounterValue(raw?.beer),
+        cubata: sanitizeCounterValue(raw?.cubata),
+        cig: sanitizeCounterValue(raw?.cig),
+        joint: sanitizeCounterValue(raw?.joint),
+        extra: sanitizeCounterValue(raw?.extra)
+      };
     }
 
-    function visibleOptionsForGroup(group) {
-      return group.options.filter(option => !isMonkRestricted(option));
+    function playerStorageKey(partyId) {
+      return `dd-player:${partyId}`;
     }
 
-    function groupBasePoints(group) {
-      return visibleOptionsForGroup(group).reduce((sum, option) => {
-        return sum + sanitizeCounterValue(localCounters[option.key]) * option.points;
-      }, 0);
+    function saveLocalProfile(profile) {
+      localStorage.setItem(playerStorageKey(profile.partyId), JSON.stringify(profile));
     }
 
-    function baseScoreCalc() {
-      let score = 0;
-      COUNTER_GROUPS.forEach(group => {
-        score += groupBasePoints(group) * statMultiplier(group.stat);
-      });
-      score += missionScore();
-      return Math.round(score * 100) / 100;
-    }
-
-    function missionScore() {
-      if (!currentPlayer) return 0;
-      return missions.reduce((sum, mission) => {
-        if (!isMissionCompletedByCurrentPlayer(mission)) return sum;
-        return sum + Number(mission.points || 0);
-      }, 0);
-    }
-
-    function totalDrinksCount() {
-      if (currentPlayer?.class_id === 'Monje') return 0;
-      return sanitizeCounterValue(localCounters.shot) +
-        sanitizeCounterValue(localCounters.beer) +
-        sanitizeCounterValue(localCounters.cubata);
-    }
-
-    function totalSmokedCount() {
-      if (currentPlayer?.class_id === 'Monje') {
-        return sanitizeCounterValue(localCounters.cig);
-      }
-      return sanitizeCounterValue(localCounters.cig) +
-        sanitizeCounterValue(localCounters.joint);
-    }
-
-    function totalDrugsCount() {
-      if (currentPlayer?.class_id === 'Monje') return 0;
-      return sanitizeCounterValue(localCounters.extra);
-    }
-    function completedMissionsCount() {
-      return missions.filter(mission => isMissionCompletedByCurrentPlayer(mission)).length;
-    }
-    function earnedAchievementsCount() {
-      return 0;
-    }
-
-    function saveLocalCounters() {
-      if (!currentParty || !currentPlayer) return;
-      localStorage.setItem(counterStorageKey(currentParty.id, currentPlayer.id), JSON.stringify(localCounters));
-    }
-
-    function loadLocalCounters() {
-      if (!currentParty || !currentPlayer) return;
-      const raw = localStorage.getItem(counterStorageKey(currentParty.id, currentPlayer.id));
-      if (!raw) {
-        localCounters = defaultCounters();
-        return;
-      }
-      try {
-        const parsed = JSON.parse(raw);
-        localCounters = { ...defaultCounters(), ...(parsed || {}) };
-      } catch {
-        localCounters = defaultCounters();
-      }
-    }
-
-    function saveLocalPlayerProfile(profile) {
-      localStorage.setItem(partyPlayerStorageKey(profile.partyId), JSON.stringify(profile));
-    }
-
-    function loadLocalPlayerProfile(partyId) {
-      const raw = localStorage.getItem(partyPlayerStorageKey(partyId));
+    function loadLocalProfile(partyId) {
+      const raw = localStorage.getItem(playerStorageKey(partyId));
       if (!raw) return null;
       try {
         return JSON.parse(raw);
       } catch {
         return null;
+      }
+    }
+
+    function clearLocalProfile(partyId) {
+      localStorage.removeItem(playerStorageKey(partyId));
+    }
+
+    function setHomeStatus(message) {
+      document.getElementById('homeStatus').textContent = message;
+    }
+
+    function setSetupStatus(message) {
+      document.getElementById('setupStatus').textContent = message;
+    }
+
+    function setGameStatus(message) {
+      document.getElementById('gameStatus').textContent = message;
+    }
+
+    function showOnly(screenId) {
+      ['homeScreen', 'setupScreen', 'gameScreen', 'playerDetailScreen', 'finalScreen'].forEach(id => {
+        document.getElementById(id).classList.toggle('hidden', id !== screenId);
+      });
+    }
+
+    function currentCounters() {
+      return sanitizeCounters(currentPlayer?.counters);
+    }
+
+    function countersForPlayer(player) {
+      return sanitizeCounters(player?.counters);
+    }
+
+    function statMultiplierForPlayer(player, key) {
+      return Number(CLASS_PRESETS[player?.class_id]?.[key] || 1);
+    }
+
+    function isMonk(player) {
+      return player?.class_id === 'Monje';
+    }
+
+    function visibleOptionsForGroup(player, group) {
+      if (!isMonk(player)) return group.options;
+      return group.options.filter(option => option.monkAllowed === true);
+    }
+
+    function groupBasePointsForPlayer(player, group) {
+      const counters = countersForPlayer(player);
+      return visibleOptionsForGroup(player, group).reduce((sum, option) => sum + sanitizeCounterValue(counters[option.key]) * option.points, 0);
+    }
+
+    function missionCompletedByPlayer(mission, playerId) {
+      if (!playerId) return false;
+      if (mission.completion_mode === 'first') return mission.first_completed_by_player_id === playerId;
+      return Array.isArray(mission.completed_by_player_ids) && mission.completed_by_player_ids.includes(playerId);
+    }
+
+    function missionScoreForPlayer(player) {
+      if (!player) return 0;
+      return missions.reduce((sum, mission) => missionCompletedByPlayer(mission, player.id) ? sum + Number(mission.points || 0) : sum, 0);
+    }
+
+    function totalDrinksForPlayer(player) {
+      if (isMonk(player)) return 0;
+      const counters = countersForPlayer(player);
+      return counters.shot + counters.beer + counters.cubata;
+    }
+
+    function totalSmokedForPlayer(player) {
+      const counters = countersForPlayer(player);
+      if (isMonk(player)) return counters.cig;
+      return counters.cig + counters.joint;
+    }
+
+    function totalDrugsForPlayer(player) {
+      if (isMonk(player)) return 0;
+      return countersForPlayer(player).extra;
+    }
+
+    function completedMissionsForPlayer(player) {
+      if (!player) return 0;
+      return missions.filter(mission => missionCompletedByPlayer(mission, player.id)).length;
+    }
+
+    function totalScoreForPlayer(player) {
+      if (!player) return 0;
+      let score = 0;
+      COUNTER_GROUPS.forEach(group => {
+        score += groupBasePointsForPlayer(player, group) * statMultiplierForPlayer(player, group.stat);
+      });
+      score += missionScoreForPlayer(player);
+      return Math.round(score * 100) / 100;
+    }
+
+    function allPlayersFinished() {
+      return players.length > 0 && players.every(player => player.night_finished === true);
+    }
+
+    function ownFinalSummary() {
+      return {
+        score: totalScoreForPlayer(currentPlayer),
+        drinks: totalDrinksForPlayer(currentPlayer),
+        smoked: totalSmokedForPlayer(currentPlayer),
+        drugs: totalDrugsForPlayer(currentPlayer),
+        missions: completedMissionsForPlayer(currentPlayer),
+        achievements: 0
+      };
+    }
+
+    function updateSetupPhotoUI() {
+      const img = document.getElementById('setupPhotoImg');
+      const placeholder = document.getElementById('setupPhotoPlaceholder');
+      if (setupPhoto) {
+        img.src = setupPhoto;
+        img.style.display = 'block';
+        placeholder.style.display = 'none';
+      } else {
+        img.removeAttribute('src');
+        img.style.display = 'none';
+        placeholder.style.display = 'flex';
+      }
+    }
+
+    function updateSelfPhotoUI() {
+      const img = document.getElementById('selfPhotoImg');
+      const placeholder = document.getElementById('selfPhotoPlaceholder');
+      if (localProfile?.profilePhoto) {
+        img.src = localProfile.profilePhoto;
+        img.style.display = 'block';
+        placeholder.style.display = 'none';
+      } else {
+        img.removeAttribute('src');
+        img.style.display = 'none';
+        placeholder.style.display = 'flex';
       }
     }
 
@@ -848,309 +908,6 @@
         };
         wrap.appendChild(btn);
       });
-    }
-
-    function updateSetupPhotoUI() {
-      const img = document.getElementById('setupPhotoImg');
-      const placeholder = document.getElementById('setupPhotoPlaceholder');
-      if (setupPhoto) {
-        img.src = setupPhoto;
-        img.style.display = 'block';
-        placeholder.style.display = 'none';
-      } else {
-        img.removeAttribute('src');
-        img.style.display = 'none';
-        placeholder.style.display = 'flex';
-      }
-    }
-
-    function updatePlayerPhotoUI() {
-      const img = document.getElementById('playerPhotoImg');
-      const placeholder = document.getElementById('playerPhotoPlaceholder');
-      if (localProfile?.profilePhoto) {
-        img.src = localProfile.profilePhoto;
-        img.style.display = 'block';
-        placeholder.style.display = 'none';
-      } else {
-        img.removeAttribute('src');
-        img.style.display = 'none';
-        placeholder.style.display = 'flex';
-      }
-    }
-
-    function renderPlayerCard() {
-      if (!currentParty || !currentPlayer) return;
-      document.getElementById('playerNameText').textContent = currentPlayer.name;
-      document.getElementById('playerClassText').textContent = `Clase: ${currentPlayer.class_id}`;
-      document.getElementById('playerPartyText').textContent = `Partida: ${currentParty.name}`;
-      updatePlayerPhotoUI();
-    }
-
-    function renderPlayers() {
-      const wrap = document.getElementById('playersList');
-      wrap.innerHTML = '';
-      if (!players.length) {
-        wrap.innerHTML = '<p class="footnote">Todavia no hay jugadores cargados.</p>';
-        return;
-      }
-      players.forEach(player => {
-        const row = document.createElement('div');
-        row.className = 'player-row';
-        row.innerHTML = `
-          <div>
-            <strong>${player.name}</strong>
-            <div class="footnote">${player.class_id}</div>
-          </div>
-          <div class="tag">${player.id === currentPlayer?.id ? 'Tu' : 'Party'}</div>
-        `;
-        wrap.appendChild(row);
-      });
-    }
-
-    function renderStats() {
-      const wrap = document.getElementById('statsList');
-      wrap.innerHTML = '';
-      if (!currentPlayer) return;
-      const preset = CLASS_PRESETS[currentPlayer.class_id] || CLASS_PRESETS.Bardo;
-      STATS.forEach(stat => {
-        const row = document.createElement('div');
-        row.className = 'stat-row';
-        row.innerHTML = `
-          <div>${stat.label}</div>
-          <div class="tag mono">x${preset[stat.key]}</div>
-        `;
-        wrap.appendChild(row);
-      });
-    }
-
-    function renderCounters() {
-      const wrap = document.getElementById('counters');
-      wrap.innerHTML = '';
-      COUNTER_GROUPS.filter(group => visibleOptionsForGroup(group).length > 0).forEach(group => {
-        const box = document.createElement('div');
-        box.className = 'counter-box';
-        box.innerHTML = `
-          <h3>${group.label}</h3>
-          <div class="counter-value mono">${groupBasePoints(group)}</div>
-          <div class="counter-options"></div>
-          <div class="footnote" style="margin-top:8px">Aplica x${statMultiplier(group.stat)} a ${group.stat}</div>
-        `;
-        const optionsWrap = box.querySelector('.counter-options');
-        visibleOptionsForGroup(group).forEach(option => {
-          const row = document.createElement('div');
-          row.className = 'counter-option';
-          row.innerHTML = `
-            <div>
-              <strong>${option.label}</strong>
-              <span>${option.points} punto${option.points === 1 ? '' : 's'} por unidad</span>
-            </div>
-            <div class="counter-step">
-              <div class="counter-count mono">${sanitizeCounterValue(localCounters[option.key])}</div>
-              <button type="button" class="counter-add">-</button>
-            </div>
-          `;
-          row.onclick = () => {
-            localCounters[option.key] = sanitizeCounterValue(localCounters[option.key]) + 1;
-            saveLocalCounters();
-            renderCounters();
-            recalc();
-          };
-          row.querySelector('button').onclick = e => {
-            e.stopPropagation();
-            localCounters[option.key] = Math.max(0, sanitizeCounterValue(localCounters[option.key]) - 1);
-            saveLocalCounters();
-            renderCounters();
-            recalc();
-          };
-          optionsWrap.appendChild(row);
-        });
-        wrap.appendChild(box);
-      });
-    }
-    function renderMissionTargets() {
-      const wrap = document.getElementById('missionTargetsBox');
-      const mode = document.getElementById('missionAssignedMode').value;
-      wrap.innerHTML = '';
-      wrap.classList.toggle('hidden', mode !== 'subset');
-      if (mode !== 'subset') return;
-
-      players.forEach(player => {
-        const row = document.createElement('label');
-        row.className = 'checkbox-row';
-        row.innerHTML = `
-          <input type="checkbox" value="${player.id}" />
-          <span>${player.name} · ${player.class_id}</span>
-        `;
-        row.querySelector('input').onchange = () => {
-          const checked = [...wrap.querySelectorAll('input:checked')];
-          if (checked.length > 3) {
-            row.querySelector('input').checked = false;
-            alert('Solo puedes asignar una mision concreta a 1, 2 o 3 jugadores.');
-          }
-        };
-        wrap.appendChild(row);
-      });
-    }
-
-    function missionVisibleToCurrentPlayer(mission) {
-      if (!currentPlayer) return false;
-      if (mission.created_by_player_id === currentPlayer.id) return true;
-      if (mission.assigned_mode === 'all') return true;
-      return Array.isArray(mission.target_player_ids) && mission.target_player_ids.includes(currentPlayer.id);
-    }
-
-    function isMissionAssignedToCurrentPlayer(mission) {
-      if (!currentPlayer) return false;
-      if (mission.assigned_mode === 'all') return true;
-      return Array.isArray(mission.target_player_ids) && mission.target_player_ids.includes(currentPlayer.id);
-    }
-
-    function isMissionCompletedByCurrentPlayer(mission) {
-      if (!currentPlayer) return false;
-      if (mission.completion_mode === 'first') {
-        return mission.first_completed_by_player_id === currentPlayer.id;
-      }
-      return Array.isArray(mission.completed_by_player_ids) && mission.completed_by_player_ids.includes(currentPlayer.id);
-    }
-
-    function playerNameById(playerId) {
-      return players.find(player => player.id === playerId)?.name || 'Alguien';
-    }
-
-    function missionTargetsText(mission) {
-      if (mission.assigned_mode === 'all') return 'Todos';
-      const names = (mission.target_player_ids || []).map(playerNameById);
-      return names.join(', ') || 'Sin objetivos';
-    }
-
-    function renderMissions() {
-      const wrap = document.getElementById('missionsList');
-      wrap.innerHTML = '';
-      const visibleMissions = missions
-        .filter(missionVisibleToCurrentPlayer)
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-      if (!visibleMissions.length) {
-        wrap.innerHTML = '<p class="footnote">No hay misiones visibles para ti todavia.</p>';
-        return;
-      }
-
-      visibleMissions.forEach(mission => {
-        const row = document.createElement('div');
-        row.className = 'mission-row';
-        const createdByName = playerNameById(mission.created_by_player_id);
-        const assignedToMe = isMissionAssignedToCurrentPlayer(mission);
-        const completedByMe = isMissionCompletedByCurrentPlayer(mission);
-        const firstOwner = mission.first_completed_by_name || (mission.first_completed_by_player_id ? playerNameById(mission.first_completed_by_player_id) : '');
-
-        let actionHtml = '<span class="tag">Solo lectura</span>';
-        if (assignedToMe) {
-          if (mission.completion_mode === 'all') {
-            actionHtml = `<button type="button" class="${completedByMe ? '' : 'ok'}" data-action="toggle">${completedByMe ? 'Descompletar' : 'Completar'}</button>`;
-          } else if (mission.first_completed_by_player_id && !completedByMe) {
-            actionHtml = `<span class="tag">Completada por ${firstOwner}</span>`;
-          } else {
-            actionHtml = `<button type="button" class="${completedByMe ? '' : 'ok'}" data-action="toggle">${completedByMe ? 'Liberar mision' : 'Completar primero'}</button>`;
-          }
-        }
-
-        row.innerHTML = `
-          <div class="mission-header">
-            <div>
-              <h3>${mission.title}</h3>
-              <p class="footnote">${mission.points} punto${mission.points === 1 ? '' : 's'}</p>
-            </div>
-            <div class="tag">${mission.completion_mode === 'first' ? 'Solo el primero' : 'Todos los asignados'}</div>
-          </div>
-          <div class="mission-meta">
-            <p>Creada por: ${createdByName}</p>
-            <p>Va para: ${missionTargetsText(mission)}</p>
-          </div>
-          <div class="mission-footer">
-            <p>${mission.completion_mode === 'first' && firstOwner ? `Primero: ${firstOwner}` : `Completada por ti: ${completedByMe ? 'Si' : 'No'}`}</p>
-            <div>${actionHtml}</div>
-          </div>
-        `;
-
-        const actionBtn = row.querySelector('[data-action="toggle"]');
-        if (actionBtn) {
-          actionBtn.onclick = () => toggleMissionCompletion(mission);
-        }
-        wrap.appendChild(row);
-      });
-    }
-
-    function recalc() {
-      document.getElementById('totalScore').textContent = String(baseScoreCalc());
-      document.getElementById('totalDrinks').textContent = String(totalDrinksCount());
-      document.getElementById('totalSmoked').textContent = String(totalSmokedCount());
-      document.getElementById('totalDrugs').textContent = String(totalDrugsCount());
-      document.getElementById('completedMissions').textContent = String(completedMissionsCount());
-      document.getElementById('earnedAchievements').textContent = String(earnedAchievementsCount());
-    }
-
-    function rerender() {
-      document.getElementById('titleMeta').textContent = currentParty && currentPlayer
-        ? `${currentParty.name} · ${currentPlayer.name}`
-        : currentParty
-          ? currentParty.name
-          : 'Sin conectar';
-      renderPlayerCard();
-      renderPlayers();
-      renderStats();
-      renderCounters();
-      renderMissionTargets();
-      renderMissions();
-      recalc();
-    }
-
-    function closeRealtime() {
-      realtimeChannels.forEach(channel => supabaseClient.removeChannel(channel));
-      realtimeChannels = [];
-    }
-
-    async function subscribeRealtime() {
-      closeRealtime();
-      if (!currentParty) return;
-      const playersChannel = supabaseClient
-        .channel(`players-${currentParty.id}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'players', filter: `party_id=eq.${currentParty.id}` }, loadPartyData)
-        .subscribe();
-
-      const missionsChannel = supabaseClient
-        .channel(`missions-${currentParty.id}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'missions', filter: `party_id=eq.${currentParty.id}` }, loadPartyData)
-        .subscribe();
-
-      realtimeChannels.push(playersChannel, missionsChannel);
-    }
-
-    async function loadPartyData() {
-      if (!currentParty) return;
-      const [{ data: playersData, error: playersError }, { data: missionsData, error: missionsError }] = await Promise.all([
-        supabaseClient.from('players').select('*').eq('party_id', currentParty.id).order('created_at', { ascending: true }),
-        supabaseClient.from('missions').select('*').eq('party_id', currentParty.id).order('created_at', { ascending: false })
-      ]);
-
-      if (playersError) {
-        setStatus('Error cargando jugadores.');
-        console.error(playersError);
-        return;
-      }
-      if (missionsError) {
-        setStatus('Error cargando misiones.');
-        console.error(missionsError);
-        return;
-      }
-
-      players = playersData || [];
-      missions = missionsData || [];
-
-      if (currentPlayer) {
-        const refreshedPlayer = players.find(player => player.id === currentPlayer.id);
-        if (refreshedPlayer) currentPlayer = refreshedPlayer;
-      }
-      rerender();
     }
 
     async function fileToDataUrl(file) {
@@ -1183,102 +940,140 @@
     async function handleSetupPhotoChange(file) {
       if (!file) return;
       try {
-        document.getElementById('setupStatus').textContent = 'Procesando foto';
-        const rawDataUrl = await fileToDataUrl(file);
-        setupPhoto = await resizeImageDataUrl(rawDataUrl, 320, 0.82);
+        setSetupStatus('Procesando foto...');
+        const raw = await fileToDataUrl(file);
+        setupPhoto = await resizeImageDataUrl(raw, 320, 0.82);
         updateSetupPhotoUI();
-        document.getElementById('setupStatus').textContent = 'Foto lista. La guardaremos solo en tu movil.';
+        setSetupStatus('Foto lista. Solo se guardara en tu movil.');
       } catch (error) {
         console.error(error);
-        document.getElementById('setupStatus').textContent = 'No se pudo procesar la foto.';
+        setSetupStatus('No se pudo procesar la foto.');
       }
     }
-    async function connectToParty() {
-      const input = document.getElementById('partyNameInput');
-      const partyName = String(input.value || '').trim();
-      if (!partyName) {
-        document.getElementById('connectStatus').textContent = 'Pon un nombre de partida.';
-        return;
-      }
-
-      document.getElementById('connectStatus').textContent = 'Buscando partida';
-      const { data, error } = await supabaseClient.from('parties').select('*').order('created_at', { ascending: true });
+    async function loadPartiesList() {
+      const { data, error } = await supabaseClient.from('parties').select('*').order('created_at', { ascending: false });
       if (error) {
         console.error(error);
-        document.getElementById('connectStatus').textContent = 'No se pudo conectar con Supabase.';
+        setHomeStatus('No se pudieron cargar las partidas.');
         return;
       }
+      parties = data || [];
+      renderPartyList();
+    }
 
-      let party = (data || []).find(item => normalizeName(item.name) === normalizeName(partyName));
-      if (!party) {
-        const shouldCreate = confirm(`La partida "${partyName}" no existe. ¿Quieres crearla?`);
-        if (!shouldCreate) {
-          document.getElementById('connectStatus').textContent = 'Partida no creada.';
-          return;
-        }
-        const insertResult = await supabaseClient.from('parties').insert({ name: partyName }).select().single();
-        if (insertResult.error) {
-          console.error(insertResult.error);
-          document.getElementById('connectStatus').textContent = 'No se pudo crear la partida.';
-          return;
-        }
-        party = insertResult.data;
+    function renderPartyList() {
+      const wrap = document.getElementById('partyList');
+      wrap.innerHTML = '';
+      if (!parties.length) {
+        wrap.innerHTML = '<p class="footnote">Todavia no hay partidas creadas.</p>';
+        return;
       }
+      parties.forEach(party => {
+        const row = document.createElement('div');
+        row.className = 'party-row';
+        row.innerHTML = `
+          <div>
+            <strong>${party.name}</strong>
+            <div class="footnote">Toca para unirte</div>
+          </div>
+          <div class="tag">Abrir</div>
+        `;
+        row.onclick = () => connectToParty(party);
+        wrap.appendChild(row);
+      });
+    }
 
+    async function createPartyFromInput() {
+      const partyName = String(document.getElementById('partyNameInput').value || '').trim();
+      if (!partyName) {
+        setHomeStatus('Escribe un nombre de partida.');
+        return;
+      }
+      const existing = parties.find(party => normalizeName(party.name) === normalizeName(partyName));
+      if (existing) {
+        setHomeStatus('Esa partida ya existe. Te conecto a ella.');
+        await connectToParty(existing);
+        return;
+      }
+      setHomeStatus('Creando partida...');
+      const { data, error } = await supabaseClient.from('parties').insert({ name: partyName }).select().single();
+      if (error) {
+        console.error(error);
+        setHomeStatus('No se pudo crear la partida.');
+        return;
+      }
+      document.getElementById('partyNameInput').value = '';
+      await loadPartiesList();
+      await connectToParty(data);
+    }
+
+    async function connectToParty(party) {
       currentParty = party;
-      document.getElementById('connectStatus').textContent = `Conectado a ${party.name}.`;
-      document.getElementById('connectCard').classList.add('hidden');
       await subscribeRealtime();
       await loadPartyData();
-
-      const savedProfile = loadLocalPlayerProfile(party.id);
+      const savedProfile = loadLocalProfile(party.id);
       if (savedProfile) {
         const matchingPlayer = players.find(player => player.id === savedProfile.playerId);
         if (matchingPlayer) {
           currentPlayer = matchingPlayer;
           localProfile = savedProfile;
-          loadLocalCounters();
-          document.getElementById('setupCard').classList.add('hidden');
-          document.getElementById('gameShell').classList.remove('hidden');
-          rerender();
-          setStatus('Jugador recuperado desde este movil.');
+          if (currentPlayer.night_finished) {
+            renderFinalScreen();
+            showOnly('finalScreen');
+            setGameStatus('Jugador recuperado desde este movil.');
+          } else {
+            renderGame();
+            showOnly('gameScreen');
+            setGameStatus('Jugador recuperado desde este movil.');
+          }
           return;
         }
       }
+      showOnly('setupScreen');
+      setSetupStatus(`Partida ${party.name} lista. Crea ahora tu personaje.`);
+    }
 
-      document.getElementById('setupCard').classList.remove('hidden');
-      document.getElementById('gameShell').classList.add('hidden');
-      document.getElementById('setupStatus').textContent = `Partida lista: ${party.name}. Crea ahora tu personaje.`;
+    function backToHome() {
+      currentParty = null;
+      currentPlayer = null;
+      localProfile = null;
+      players = [];
+      missions = [];
+      selectedPlayerId = null;
+      closeRealtime();
+      showOnly('homeScreen');
+      setHomeStatus('Puedes crear una nueva partida o abrir una existente.');
+      loadPartiesList();
     }
 
     async function createPlayer() {
       if (!currentParty) return;
       const name = String(document.getElementById('setupNameInput').value || '').trim();
       if (!name) {
-        document.getElementById('setupStatus').textContent = 'Pon tu nombre.';
+        setSetupStatus('Pon tu nombre.');
         return;
       }
-
       const existing = players.find(player => normalizeName(player.name) === normalizeName(name));
       if (existing) {
-        document.getElementById('setupStatus').textContent = 'Ese nombre ya existe en la partida. Elige otro.';
+        setSetupStatus('Ese nombre ya existe en la partida.');
         return;
       }
-
-      document.getElementById('setupStatus').textContent = 'Creando personaje';
+      setSetupStatus('Creando personaje...');
       const { data, error } = await supabaseClient
         .from('players')
         .insert({
           party_id: currentParty.id,
           name,
-          class_id: selectedSetupClass
+          class_id: selectedSetupClass,
+          counters: defaultCounters(),
+          night_finished: false
         })
         .select()
         .single();
 
       if (error) {
         console.error(error);
-        document.getElementById('setupStatus').textContent = 'No se pudo crear el personaje.';
+        setSetupStatus('No se pudo crear el personaje. Revisa que la migracion del backend este completa.');
         return;
       }
 
@@ -1286,38 +1081,223 @@
       localProfile = {
         partyId: currentParty.id,
         playerId: data.id,
-        partyName: currentParty.name,
         name: data.name,
         classId: data.class_id,
         profilePhoto: setupPhoto || null
       };
-      saveLocalPlayerProfile(localProfile);
-      loadLocalCounters();
-      document.getElementById('setupCard').classList.add('hidden');
-      document.getElementById('gameShell').classList.remove('hidden');
+      saveLocalProfile(localProfile);
       await loadPartyData();
-      setStatus('Jugador creado y listo.');
+      renderGame();
+      showOnly('gameScreen');
+      setGameStatus('Jugador creado y listo.');
+    }
+
+    function closeRealtime() {
+      realtimeChannels.forEach(channel => supabaseClient.removeChannel(channel));
+      realtimeChannels = [];
+    }
+
+    async function subscribeRealtime() {
+      closeRealtime();
+      if (!currentParty) return;
+      const playersChannel = supabaseClient
+        .channel(`players-${currentParty.id}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'players', filter: `party_id=eq.${currentParty.id}` }, loadPartyData)
+        .subscribe();
+      const missionsChannel = supabaseClient
+        .channel(`missions-${currentParty.id}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'missions', filter: `party_id=eq.${currentParty.id}` }, loadPartyData)
+        .subscribe();
+      realtimeChannels.push(playersChannel, missionsChannel);
+    }
+
+    async function loadPartyData() {
+      if (!currentParty) return;
+      const [{ data: playersData, error: playersError }, { data: missionsData, error: missionsError }] = await Promise.all([
+        supabaseClient.from('players').select('*').eq('party_id', currentParty.id).order('created_at', { ascending: true }),
+        supabaseClient.from('missions').select('*').eq('party_id', currentParty.id).order('created_at', { ascending: false })
+      ]);
+
+      if (playersError) {
+        console.error(playersError);
+        setGameStatus('Error cargando jugadores.');
+        return;
+      }
+      if (missionsError) {
+        console.error(missionsError);
+        setGameStatus('Error cargando misiones.');
+        return;
+      }
+
+      players = (playersData || []).map(player => ({ ...player, counters: sanitizeCounters(player.counters) }));
+      missions = missionsData || [];
+
+      if (currentPlayer) {
+        const refreshed = players.find(player => player.id === currentPlayer.id);
+        if (refreshed) currentPlayer = refreshed;
+      }
+
+      if (document.getElementById('gameScreen').classList.contains('hidden') === false) renderGame();
+      if (document.getElementById('playerDetailScreen').classList.contains('hidden') === false) renderPlayerDetail();
+      if (document.getElementById('finalScreen').classList.contains('hidden') === false) renderFinalScreen();
+    }
+
+    function renderGame() {
+      if (currentPlayer?.night_finished) {
+        renderFinalScreen();
+        showOnly('finalScreen');
+        return;
+      }
+      renderSelfCard();
+      renderStats();
+      renderPlayers();
+      renderCounters();
+      renderMissionTargets();
+      renderMissions();
+      renderSummary();
+    }
+
+    function renderSelfCard() {
+      if (!currentPlayer) return;
+      document.getElementById('selfNameText').textContent = currentPlayer.name;
+      document.getElementById('selfClassText').textContent = `Clase: ${currentPlayer.class_id}`;
+      updateSelfPhotoUI();
+    }
+
+    function renderStats() {
+      const wrap = document.getElementById('statsList');
+      wrap.innerHTML = '';
+      if (!currentPlayer) return;
+      const preset = CLASS_PRESETS[currentPlayer.class_id] || CLASS_PRESETS.Bardo;
+      STATS.forEach(stat => {
+        const row = document.createElement('div');
+        row.className = 'stat-row';
+        row.innerHTML = `<div>${stat.label}</div><div class="tag mono">x${preset[stat.key]}</div>`;
+        wrap.appendChild(row);
+      });
+    }
+
+    function renderPlayers() {
+      const wrap = document.getElementById('playersList');
+      wrap.innerHTML = '';
+      if (!players.length) {
+        wrap.innerHTML = '<p class="footnote">Todavia no hay jugadores cargados.</p>';
+        return;
+      }
+      players.forEach(player => {
+        const row = document.createElement('div');
+        row.className = 'player-row';
+        row.innerHTML = `
+          <div>
+            <strong>${player.name}</strong>
+            <div class="footnote">${player.class_id}</div>
+          </div>
+          <div class="tag">${player.night_finished ? 'Noche finalizada' : (player.id === currentPlayer?.id ? 'Tu' : 'Ver ficha')}</div>
+        `;
+        row.onclick = () => {
+          selectedPlayerId = player.id;
+          renderPlayerDetail();
+          showOnly('playerDetailScreen');
+        };
+        wrap.appendChild(row);
+      });
+    }
+    async function updateOwnCounters(nextCounters) {
+      if (!currentPlayer) return;
+      const sanitized = sanitizeCounters(nextCounters);
+      currentPlayer = { ...currentPlayer, counters: sanitized };
+      renderCounters();
+      renderSummary();
+      const { error } = await supabaseClient.from('players').update({ counters: sanitized }).eq('id', currentPlayer.id);
+      if (error) {
+        console.error(error);
+        setGameStatus('No se pudieron guardar los contadores. Revisa la migracion del backend.');
+      }
+    }
+
+    function renderCounters() {
+      const wrap = document.getElementById('counters');
+      wrap.innerHTML = '';
+      if (!currentPlayer) return;
+      COUNTER_GROUPS.forEach(group => {
+        const visibleOptions = visibleOptionsForGroup(currentPlayer, group);
+        if (!visibleOptions.length) return;
+        const counters = currentCounters();
+        const box = document.createElement('div');
+        box.className = 'counter-box';
+        box.innerHTML = `
+          <h3>${group.label}</h3>
+          <div class="counter-value mono">${groupBasePointsForPlayer(currentPlayer, group)}</div>
+          <div class="counter-options"></div>
+          <div class="footnote" style="margin-top:8px">Aplica x${statMultiplierForPlayer(currentPlayer, group.stat)} a ${group.stat}</div>
+        `;
+        const optionsWrap = box.querySelector('.counter-options');
+        visibleOptions.forEach(option => {
+          const row = document.createElement('div');
+          row.className = 'counter-option';
+          row.innerHTML = `
+            <div>
+              <strong>${option.label}</strong>
+              <span>${option.points} punto${option.points === 1 ? '' : 's'} por unidad</span>
+            </div>
+            <div class="counter-step">
+              <div class="counter-count mono">${counters[option.key]}</div>
+              <button type="button" class="subtle-button counter-minus">-</button>
+            </div>
+          `;
+          row.onclick = () => {
+            const next = { ...counters, [option.key]: counters[option.key] + 1 };
+            updateOwnCounters(next);
+          };
+          row.querySelector('button').onclick = e => {
+            e.stopPropagation();
+            const next = { ...counters, [option.key]: Math.max(0, counters[option.key] - 1) };
+            updateOwnCounters(next);
+          };
+          optionsWrap.appendChild(row);
+        });
+        wrap.appendChild(box);
+      });
+    }
+
+    function renderMissionTargets() {
+      const wrap = document.getElementById('missionTargetsBox');
+      const mode = document.getElementById('missionAssignedMode').value;
+      wrap.innerHTML = '';
+      wrap.classList.toggle('hidden', mode !== 'subset');
+      if (mode !== 'subset') return;
+      players.forEach(player => {
+        const row = document.createElement('label');
+        row.className = 'checkbox-row';
+        row.innerHTML = `<input type="checkbox" value="${player.id}" /><span>${player.name} · ${player.class_id}</span>`;
+        row.querySelector('input').onchange = () => {
+          const checked = [...wrap.querySelectorAll('input:checked')];
+          if (checked.length > 3) {
+            row.querySelector('input').checked = false;
+            alert('Solo puedes elegir 1, 2 o 3 personas.');
+          }
+        };
+        wrap.appendChild(row);
+      });
     }
 
     async function createMission() {
       if (!currentParty || !currentPlayer) return;
       const title = String(document.getElementById('missionTitleInput').value || '').trim();
       const points = sanitizeCounterValue(document.getElementById('missionPointsInput').value);
-      const assignedMode = document.getElementById('missionAssignedMode').value;
       const completionMode = document.getElementById('missionCompletionMode').value;
+      const assignedMode = document.getElementById('missionAssignedMode').value;
       const targetIds = [...document.querySelectorAll('#missionTargetsBox input:checked')].map(input => input.value);
-
       if (!title) {
         document.getElementById('missionCreateStatus').textContent = 'La mision necesita titulo.';
         return;
       }
       if (assignedMode === 'subset' && (!targetIds.length || targetIds.length > 3)) {
-        document.getElementById('missionCreateStatus').textContent = 'Si es concreta, asignala a 1, 2 o 3 jugadores.';
+        document.getElementById('missionCreateStatus').textContent = 'Marca 1, 2 o 3 personas concretas.';
         return;
       }
-
-      document.getElementById('missionCreateStatus').textContent = 'Enviando mision';
-      const payload = {
+      document.getElementById('missionCreateStatus').textContent = 'Enviando mision...';
+      const { error } = await supabaseClient.from('missions').insert({
         party_id: currentParty.id,
         title,
         points,
@@ -1328,148 +1308,269 @@
         completed_by_player_ids: [],
         first_completed_by_player_id: null,
         first_completed_by_name: null
-      };
-
-      const { error } = await supabaseClient.from('missions').insert(payload);
+      });
       if (error) {
         console.error(error);
         document.getElementById('missionCreateStatus').textContent = 'No se pudo enviar la mision.';
         return;
       }
-
       document.getElementById('missionTitleInput').value = '';
       document.getElementById('missionPointsInput').value = '3';
+      document.getElementById('missionCompletionMode').value = 'first';
       document.getElementById('missionAssignedMode').value = 'all';
-      document.getElementById('missionCompletionMode').value = 'all';
       renderMissionTargets();
       document.getElementById('missionCreateStatus').textContent = 'Mision enviada.';
       await loadPartyData();
     }
 
-    async function toggleMissionCompletion(mission) {
-      if (!currentPlayer) return;
-      if (!isMissionAssignedToCurrentPlayer(mission)) return;
+    function missionVisibleToCurrentPlayer(mission) {
+      if (!currentPlayer) return false;
+      if (mission.created_by_player_id === currentPlayer.id) return true;
+      if (mission.assigned_mode === 'all') return true;
+      return Array.isArray(mission.target_player_ids) && mission.target_player_ids.includes(currentPlayer.id);
+    }
 
+    function missionAssignedToCurrentPlayer(mission) {
+      if (!currentPlayer) return false;
+      if (mission.assigned_mode === 'all') return true;
+      return Array.isArray(mission.target_player_ids) && mission.target_player_ids.includes(currentPlayer.id);
+    }
+
+    function playerNameById(playerId) {
+      return players.find(player => player.id === playerId)?.name || 'Alguien';
+    }
+
+    function missionTargetsText(mission) {
+      if (mission.assigned_mode === 'all') return 'Toda la partida';
+      return (mission.target_player_ids || []).map(playerNameById).join(', ');
+    }
+
+    async function toggleMissionCompletion(mission) {
+      if (!currentPlayer || !missionAssignedToCurrentPlayer(mission)) return;
       if (mission.completion_mode === 'first') {
         if (mission.first_completed_by_player_id && mission.first_completed_by_player_id !== currentPlayer.id) return;
-
         const alreadyMine = mission.first_completed_by_player_id === currentPlayer.id;
         const completedSet = new Set(mission.completed_by_player_ids || []);
-        if (alreadyMine) {
-          completedSet.delete(currentPlayer.id);
-        } else {
-          completedSet.add(currentPlayer.id);
-        }
-
-        const { error } = await supabaseClient
-          .from('missions')
-          .update({
-            completed_by_player_ids: [...completedSet],
-            first_completed_by_player_id: alreadyMine ? null : currentPlayer.id,
-            first_completed_by_name: alreadyMine ? null : currentPlayer.name
-          })
-          .eq('id', mission.id);
-
+        if (alreadyMine) completedSet.delete(currentPlayer.id);
+        else completedSet.add(currentPlayer.id);
+        const { error } = await supabaseClient.from('missions').update({
+          completed_by_player_ids: [...completedSet],
+          first_completed_by_player_id: alreadyMine ? null : currentPlayer.id,
+          first_completed_by_name: alreadyMine ? null : currentPlayer.name
+        }).eq('id', mission.id);
         if (error) {
           console.error(error);
-          setStatus('No se pudo actualizar la mision.');
+          setGameStatus('No se pudo actualizar la mision.');
           return;
         }
       } else {
         const completedSet = new Set(mission.completed_by_player_ids || []);
-        if (completedSet.has(currentPlayer.id)) {
-          completedSet.delete(currentPlayer.id);
-        } else {
-          completedSet.add(currentPlayer.id);
-        }
-
-        const { error } = await supabaseClient
-          .from('missions')
-          .update({ completed_by_player_ids: [...completedSet] })
-          .eq('id', mission.id);
-
+        if (completedSet.has(currentPlayer.id)) completedSet.delete(currentPlayer.id);
+        else completedSet.add(currentPlayer.id);
+        const { error } = await supabaseClient.from('missions').update({ completed_by_player_ids: [...completedSet] }).eq('id', mission.id);
         if (error) {
           console.error(error);
-          setStatus('No se pudo actualizar la mision.');
+          setGameStatus('No se pudo actualizar la mision.');
           return;
         }
       }
-
       await loadPartyData();
     }
 
-    function exportLocal() {
-      if (!currentParty || !currentPlayer || !localProfile) {
-        setStatus('No hay datos locales para exportar.');
+    function renderMissions() {
+      const wrap = document.getElementById('missionsList');
+      wrap.innerHTML = '';
+      const visibleMissions = missions.filter(missionVisibleToCurrentPlayer);
+      if (!visibleMissions.length) {
+        wrap.innerHTML = '<p class="footnote">No hay misiones visibles para ti todavia.</p>';
         return;
       }
+      visibleMissions.forEach(mission => {
+        const completedByMe = missionCompletedByPlayer(mission, currentPlayer?.id);
+        const firstOwner = mission.first_completed_by_name || (mission.first_completed_by_player_id ? playerNameById(mission.first_completed_by_player_id) : '');
+        const canToggle = missionAssignedToCurrentPlayer(mission) && (mission.completion_mode === 'all' || !mission.first_completed_by_player_id || mission.first_completed_by_player_id === currentPlayer?.id);
+        const row = document.createElement('div');
+        row.className = 'mission-row';
+        row.innerHTML = `
+          <div class="mission-header">
+            <div>
+              <h3>${mission.title}</h3>
+              <p class="footnote">${mission.points} punto${mission.points === 1 ? '' : 's'}</p>
+            </div>
+            <div class="tag">${mission.completion_mode === 'first' ? '1 ganador' : 'Multiples ganadores'}</div>
+          </div>
+          <div class="mission-meta">
+            <p>Creada por: ${playerNameById(mission.created_by_player_id)}</p>
+            <p>Va para: ${missionTargetsText(mission)}</p>
+          </div>
+          <div class="mission-footer">
+            <p>${mission.completion_mode === 'first' && firstOwner ? `Completada por ${firstOwner}` : `Tu estado: ${completedByMe ? 'Completada' : 'Pendiente'}`}</p>
+            <div>${canToggle ? `<button type="button" data-mission-id="${mission.id}" class="${completedByMe ? '' : 'ok'}">${completedByMe ? 'Descompletar' : 'Completar'}</button>` : '<span class="tag">Bloqueada</span>'}</div>
+          </div>
+        `;
+        const btn = row.querySelector('button[data-mission-id]');
+        if (btn) btn.onclick = () => toggleMissionCompletion(mission);
+        wrap.appendChild(row);
+      });
+    }
+    function renderSummary() {
+      const summary = ownFinalSummary();
+      document.getElementById('totalScore').textContent = String(summary.score);
+      document.getElementById('totalDrinks').textContent = String(summary.drinks);
+      document.getElementById('totalSmoked').textContent = String(summary.smoked);
+      document.getElementById('totalDrugs').textContent = String(summary.drugs);
+      document.getElementById('completedMissions').textContent = String(summary.missions);
+      document.getElementById('earnedAchievements').textContent = String(summary.achievements);
+      const finished = players.filter(player => player.night_finished).length;
+      setGameStatus(`Han finalizado ${finished} de ${players.length} jugadores.`);
+    }
+
+    function renderPlayerDetail() {
+      const player = players.find(item => item.id === selectedPlayerId);
+      if (!player) return;
+      document.getElementById('detailNameText').textContent = player.name;
+      document.getElementById('detailClassText').textContent = `Clase: ${player.class_id} · ${player.night_finished ? 'Noche finalizada' : 'Sigue en juego'}`;
+      document.getElementById('detailScoreText').textContent = String(totalScoreForPlayer(player));
+      document.getElementById('detailDrinksText').textContent = String(totalDrinksForPlayer(player));
+      document.getElementById('detailSmokedText').textContent = String(totalSmokedForPlayer(player));
+      document.getElementById('detailDrugsText').textContent = String(totalDrugsForPlayer(player));
+      document.getElementById('detailMissionsText').textContent = String(completedMissionsForPlayer(player));
+      const completed = missions
+        .filter(mission => missionCompletedByPlayer(mission, player.id))
+        .map(mission => ({ title: mission.title, points: mission.points }));
+      const missionWrap = document.getElementById('detailMissionList');
+      missionWrap.innerHTML = '';
+      if (!completed.length) {
+        missionWrap.innerHTML = '<div class="detail-row"><span class="footnote">Todavia no ha completado misiones.</span></div>';
+        return;
+      }
+      completed.forEach(mission => {
+        const row = document.createElement('div');
+        row.className = 'detail-row';
+        row.innerHTML = `<span>${mission.title}</span><span class="tag mono">${mission.points} pts</span>`;
+        missionWrap.appendChild(row);
+      });
+    }
+
+    async function setNightFinished(value) {
+      if (!currentPlayer) return;
+      const { error } = await supabaseClient.from('players').update({ night_finished: value }).eq('id', currentPlayer.id);
+      if (error) {
+        console.error(error);
+        setGameStatus('No se pudo actualizar el estado de final de noche.');
+        return false;
+      }
+      return true;
+    }
+
+    async function finishNight() {
+      const ok = await setNightFinished(true);
+      if (!ok) return;
+      await loadPartyData();
+      renderFinalScreen();
+      showOnly('finalScreen');
+    }
+
+    async function backToNight() {
+      if (allPlayersFinished()) return;
+      const ok = await setNightFinished(false);
+      if (!ok) return;
+      await loadPartyData();
+      renderGame();
+      showOnly('gameScreen');
+    }
+
+    function renderFinalScreen() {
+      const summary = ownFinalSummary();
+      document.getElementById('finalScore').textContent = String(summary.score);
+      document.getElementById('finalDrinks').textContent = String(summary.drinks);
+      document.getElementById('finalSmoked').textContent = String(summary.smoked);
+      document.getElementById('finalDrugs').textContent = String(summary.drugs);
+      document.getElementById('finalMissions').textContent = String(summary.missions);
+      document.getElementById('finalAchievements').textContent = String(summary.achievements);
+      const finished = players.filter(player => player.night_finished).length;
+      const locked = allPlayersFinished();
+      document.getElementById('finalStatus').textContent = locked
+        ? 'Todo el mundo ha finalizado la noche. Ya no se puede volver atras. Cuando salgais, esta partida ya se puede limpiar.'
+        : `Han finalizado ${finished} de ${players.length} jugadores. Puedes volver atras mientras no haya finalizado todo el mundo.`;
+      document.getElementById('backToNightBtn').disabled = locked;
+    }
+
+    async function cleanupPartyIfLocked() {
+      if (!currentParty || !allPlayersFinished() || cleanupInFlight) return;
+      cleanupInFlight = true;
+      try {
+        const { error } = await supabaseClient.from('parties').delete().eq('id', currentParty.id);
+        if (error) {
+          console.error(error);
+        }
+      } finally {
+        cleanupInFlight = false;
+      }
+    }
+
+    async function exportAndExit() {
+      if (!currentParty || !currentPlayer) return;
+      const partyId = currentParty.id;
       const payload = {
-        profile: localProfile,
-        counters: localCounters
+        party: currentParty.name,
+        player: currentPlayer.name,
+        classId: currentPlayer.class_id,
+        counters: countersForPlayer(currentPlayer),
+        summary: ownFinalSummary(),
+        completedMissions: missions.filter(mission => missionCompletedByPlayer(mission, currentPlayer.id)).map(mission => ({ title: mission.title, points: mission.points })),
+        photo: localProfile?.profilePhoto || null
       };
       const data = JSON.stringify(payload, null, 2);
-      navigator.clipboard.writeText(data)
-        .then(() => setStatus('Datos locales copiados al portapapeles.'))
-        .catch(() => {
-          alert(data);
-          setStatus('No se pudo copiar. Te lo he mostrado en pantalla.');
-        });
-    }
-
-    function importLocal() {
-      if (!currentParty || !currentPlayer) {
-        setStatus('Conectate primero a una partida.');
-        return;
-      }
-      const raw = prompt('Pega aqui el JSON local exportado:');
-      if (!raw) return;
+      let copied = false;
       try {
-        const parsed = JSON.parse(raw);
-        if (parsed.profile?.partyId === currentParty.id && parsed.profile?.playerId === currentPlayer.id) {
-          localProfile = {
-            ...localProfile,
-            profilePhoto: parsed.profile.profilePhoto || null
-          };
-          saveLocalPlayerProfile(localProfile);
-        }
-        localCounters = { ...defaultCounters(), ...(parsed.counters || {}) };
-        saveLocalCounters();
-        rerender();
-        setStatus('Datos locales importados.');
+        await navigator.clipboard.writeText(data);
+        copied = true;
       } catch {
-        alert('JSON invalido.');
+        alert(data);
       }
+      if (allPlayersFinished()) {
+        await cleanupPartyIfLocked();
+        clearLocalProfile(partyId);
+      }
+      closeRealtime();
+      currentParty = null;
+      currentPlayer = null;
+      players = [];
+      missions = [];
+      selectedPlayerId = null;
+      localProfile = null;
+      showOnly('homeScreen');
+      await loadPartiesList();
+      setHomeStatus(copied
+        ? 'Datos finales copiados. Puedes abrir o crear otra partida.'
+        : 'No se pudo copiar automaticamente. Se mostro el JSON en pantalla.');
     }
 
-    function wipeLocalData() {
-      if (!currentParty || !currentPlayer) return;
-      if (!confirm('¿Borrar solo los datos locales de este movil?')) return;
-      localCounters = defaultCounters();
-      saveLocalCounters();
-      if (localProfile) {
-        localProfile.profilePhoto = null;
-        saveLocalPlayerProfile(localProfile);
-      }
-      rerender();
-      setStatus('Datos locales borrados.');
+    function renderHome() {
+      showOnly('homeScreen');
+      setHomeStatus('Crea una partida o toca una existente para entrar.');
     }
+
     function wireUI() {
       renderSetupClasses();
       updateSetupPhotoUI();
-
-      document.getElementById('connectPartyBtn').onclick = connectToParty;
+      document.getElementById('createPartyBtn').onclick = createPartyFromInput;
+      document.getElementById('setupBackBtn').onclick = backToHome;
       document.getElementById('createPlayerBtn').onclick = createPlayer;
       document.getElementById('setupPhotoBox').onclick = () => document.getElementById('setupPhotoInput').click();
       document.getElementById('setupPhotoInput').onchange = e => handleSetupPhotoChange(e.target.files?.[0]);
       document.getElementById('missionAssignedMode').onchange = renderMissionTargets;
       document.getElementById('createMissionBtn').onclick = createMission;
-      document.getElementById('exportLocalBtn').onclick = exportLocal;
-      document.getElementById('importLocalBtn').onclick = importLocal;
-      document.getElementById('wipeLocalBtn').onclick = wipeLocalData;
+      document.getElementById('detailBackBtn').onclick = () => showOnly('gameScreen');
+      document.getElementById('finishNightBtn').onclick = finishNight;
+      document.getElementById('backToNightBtn').onclick = backToNight;
+      document.getElementById('exportAndExitBtn').onclick = exportAndExit;
     }
 
     wireUI();
+    renderHome();
+    loadPartiesList();
   </script>
 </body>
 </html>
-
